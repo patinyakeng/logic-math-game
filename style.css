@@ -101,3 +101,46 @@ select.tf.placeholder{color:#999}
 #leaderboard th{background:#f2f6ff}
 
 .formula{background:#f6f9ff;border:1px dashed #cfe1ff;border-radius:14px;padding:12px;font-size:16px;margin:6px 0 4px}
+
+/* ===== Range slider base (ให้เห็นพื้นหลังไล่สี) ===== */
+input[type="range"] {
+  -webkit-appearance: none;
+  width: 280px;
+  height: 10px;
+  border-radius: 999px;
+  background: #e6e9f2;            /* จะถูก JS เขียนทับเป็น gradient */
+  outline: none;
+}
+input[type="range"]::-webkit-slider-runnable-track {
+  height: 10px;
+  border-radius: 999px;
+  background: transparent;
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 2px solid #fff;
+  background: #0a84ff;            /* จะถูก JS เขียนทับให้ตรงกับสีระดับ */
+  box-shadow: 0 0 0 1px rgba(0,0,0,.06);
+  margin-top: -6px; /* ยก thumb ให้อยู่กึ่งกลางราง */
+}
+input[type="range"]::-moz-range-track {
+  height: 10px;
+  border-radius: 999px;
+  background: transparent;
+}
+input[type="range"]::-moz-range-thumb {
+  width: 22px; height: 22px; border-radius: 50%;
+  border: 2px solid #fff; background: #0a84ff;
+  box-shadow: 0 0 0 1px rgba(0,0,0,.06);
+}
+
+/* ป้ายค่าความยากให้รับสีตามระดับได้ (JS จะเซ็ต inline) */
+#diff-val {
+  color: #fff;                     /* ให้อ่านชัดกับพื้นสีเข้ม */
+  border: none;
+}
+
