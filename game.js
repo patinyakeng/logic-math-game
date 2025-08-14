@@ -57,8 +57,7 @@
 
   // Helpers
   function secondsForDifficulty(d){
-    // linear 1->10s ... 10->60s
-    const sec = 10 + (d-1)*(50/9);
+    const sec = 10 + (d-1)*(7);
     return Math.round(sec);
   }
   function show(el){ el.classList.remove('hidden'); }
@@ -316,12 +315,12 @@ function updateDifficultyTheme() {
     const correct = (val === state.current.target);
     if(correct){
       const remaining = Math.max(0, state.timer.left);
-      const gained = Math.floor((100 + 5*remaining) * state.difficulty);
+      const gained = Math.floor((100 + 10*remaining) * state.difficulty);
       state.score += gained; state.correct += 1;
       updateHudScore();
       feedback.innerHTML = `<span class="correct">ถูกต้อง! +${gained} คะแนน</span>`;
     }else{
-      const penalty = 200 * state.difficulty;
+      const penalty = 100 * state.difficulty;
       state.score -= penalty;
       updateHudScore();
       feedback.innerHTML = `<span class="incorrect">ตอบผิด −${penalty} คะแนน</span>`;
