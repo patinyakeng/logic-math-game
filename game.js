@@ -1,3 +1,5 @@
+const API_URL = "https://script.google.com/macros/s/AKfycbxaW2ZR74JA3D3o3RvVHO7s9Gnxz9h_qs1uUhrsb-6jJVPCxCvfoCf9XVDiNZQtsB7w/exec";
+
 // Logic Game (Parentheses) — v5 + Top10 (Google Sheets) + colorized timer/slider + colored parentheses
 (function(){
   const $ = (sel) => document.querySelector(sel);
