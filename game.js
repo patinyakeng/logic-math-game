@@ -187,7 +187,7 @@ function updateDifficultyTheme() {
   {
     const usedT = 0;                        // ใช้เวลาไป 0%
     const color = colorFromT(usedT);        // ฟ้า
-    timerBar.style.backgroundColor = color;
+    timerBar.style.background = color;
   }
 
   state.timer.id = setInterval(()=>{
@@ -202,14 +202,14 @@ function updateDifficultyTheme() {
       state.timer.left = 0;
       timerText.textContent = 'หมดเวลา';
       timerBar.style.width = '0%';
-      timerBar.style.backgroundColor = color;     // สีสุดท้าย = แดงเข้ม
+      timerBar.style.background = color;     // สีสุดท้าย = แดงเข้ม
       lockInputs(true);
       feedback.innerHTML = '<span class="incorrect">หมดเวลา! ลองข้อถัดไปนะ</span>';
       if(!state.finished) setTimeout(nextQuestion, 800);
     }else{
       timerText.textContent = `${Math.ceil(left)} วิ`;
       timerBar.style.width = (fracLeft*100) + '%';
-      timerBar.style.backgroundColor = color;
+      timerBar.style.background = color;
     }
   }, 100);
 }
