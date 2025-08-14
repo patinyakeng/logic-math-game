@@ -65,6 +65,40 @@
   function hide(el){ el.classList.add('hidden'); }
   function updateHudScore(){ hudScore.textContent = state.score; }
 
+  // ===== Color helpers: ฟ้า(ระดับต่ำ/เวลาเยอะ) → แดงเข้ม(ระดับสูง/เวลาใกล้หมด) =====
+// t ∈ [0,1] ; 0 = ฟ้า, 1 = แดงเข้ม
+function colorFromT(t) {
+  // ใช้ HSL ไล่ hue: ฟ้า ~210° → แดง ~0°
+  const hue = 210 * (1 - t);      // t=0 -> 210 (ฟ้า), t=1 -> 0 (แดง)
+  const sat = 90;                  // saturation %
+  const light = 50;                // lightness  %
+  return `hsl(${hue}, ${sat}%, ${light}%)`;
+}
+
+// อัปเดตสีของสไลเดอร์ความยาก + ป้ายค่า
+function updateDifficultyTheme() {
+  const slider = document.getElementById('difficulty');
+  const badge  = document.getElementById('diff-val');
+  const min = parseInt(slider.min || '1', 10);
+  const max = parseInt(slider.max || '10', 10);
+  const val = parseInt(slider.value, 10);
+
+  // ทำให้ t = 0 เมื่อระดับต่ำสุด, 1 เมื่อระดับสูงสุด
+  const t = (val - min) / (max - min);
+  const color = colorFromT(t);
+  const pct = ((val - min) / (max - min)) * 100;
+
+  // รางไล่สีด้านซ้ายเป็นสีตามระดับ, ด้านขวาเทา
+  slider.style.background = `linear-gradient(to right, ${color} 0%, ${color} ${pct}%, #e6e9f2 ${pct}%, #e6e9f2 100%)`;
+  // หัวแม่มือให้เข้ากับสี
+  slider.style.setProperty('--thumb-color', color);
+  // Firefox ไม่มีตัวแปรนี้ ให้ใช้ inline กับ ::-moz-range-thumb ไม่ได้ จึงพอแค่ track ก็โอเค
+
+  // ป้ายค่าความยาก ไล่สีตาม
+  badge.style.background = color;
+  badge.style.border = `1px solid ${color}`;
+}
+
   // Tree
   function randomTree(nLeaves){
     let idx=0;
