@@ -16,8 +16,9 @@
     <!-- Start Screen -->
     <section id="start-screen" class="card">
       <h2>ชื่อผู้เล่น</h2>
-      <label class="lbl">ชื่อ - ห้อง/เลขที่ (เช่น ปฏิญ 4/3 - 15)</label>
-      <input id="player-id" type="text" placeholder="พิมพ์ที่นี่..." />
+      <label class="lbl" for="player-id">ชื่อ - ห้อง/เลขที่ (เช่น ปฏิญ 4/3 - 15)</label>
+      <input id="player-id" type="text" placeholder="พิมพ์ที่นี่..."
+             autocomplete="off" autocapitalize="off" spellcheck="false" inputmode="text" />
       <button id="start-btn" class="primary large">เลือกระดับความท้าทาย</button>
     </section>
 
@@ -26,14 +27,15 @@
       <h2>เลือกระดับความท้าทาย</h2>
       <div class="row">
         <label for="difficulty" class="lbl">(1–10):</label>
-        <input id="difficulty" type="range" min="1" max="10" value="3" oninput="document.getElementById('diff-val').textContent=this.value" />
+        <input id="difficulty" type="range" min="1" max="10" value="3"
+               oninput="document.getElementById('diff-val').textContent=this.value" />
         <span id="diff-val" class="badge">3</span>
       </div>
       <div class="formula">
         คะแนนจะขึ้นอยู่กับระดับความยากที่เลือกและระยะเวลาที่ใช้ในแต่ละข้อ<br/>
         <strong>ตอบถูก</strong> : (100 + 10×เวลาที่เหลือ)×ระดับความยาก<br/>
         <strong>ตอบผิด</strong> : −100 × ระดับความยาก<br/>
-        <strong>กดข้าม/หมดเวลา</strong> : ไม่เสียคะแนน<br/>
+        <strong>กดข้าม/หมดเวลา</strong> : ไม่เสียคะแนน
       </div>
       <div class="row">
         <button id="play-btn" class="primary large">เริ่มเกม (10 ข้อ)</button>
@@ -41,12 +43,12 @@
       </div>
       <div id="last-player" class="muted"></div>
 
+      <!-- Top 10 (รวมทั้งหมด) บนหน้าเมนู -->
       <div id="menu-top10" class="card" style="margin-top:8px;">
-      <h3>🏆 Top 10 (ทั้งหมด)</h3>
-      <div id="top10-menu-table" class="top10-table muted">กำลังโหลด...</div>
+        <h3>🏆 Top 10 (ทั้งหมด)</h3>
+        <div id="top10-menu-table" class="top10-table muted">กำลังโหลด...</div>
       </div>
-      </section>
-
+    </section>
 
     <!-- Game Screen -->
     <section id="game-screen" class="card hidden">
@@ -84,21 +86,25 @@
         <button id="back-menu-btn" class="primary large">กลับหน้าหลัก</button>
         <button id="play-again-btn" class="ghost large">เล่นอีกครั้ง</button>
       </div>
+
+      <!-- Top 10 (รวมทั้งหมด) บนหน้าสรุป -->
       <div id="summary-top10" class="card" style="margin-top:8px;">
         <h3>🏆 Top 10 (ทั้งหมด)</h3>
         <div id="top10-summary-table" class="top10-table muted">กำลังโหลด...</div>
       </div>
     </section>
 
-    <!-- Leaderboard Screen -->
+    <!-- Leaderboard Screen (local) -->
     <section id="leaderboard-screen" class="card hidden">
-      <h2>สถิติการเล่น(เฉพาะอุปกรณ์นี้)</h2>
+      <h2>สถิติการเล่น (เฉพาะอุปกรณ์นี้)</h2>
       <div id="leaderboard"></div>
       <div class="row">
         <button id="leaderboard-back" class="primary large">กลับหน้าหลัก</button>
       </div>
     </section>
   </div>
-  <script src="game.js"></script>
+
+  <!-- script ไว้ท้าย body ก็โอเค (โหลดหลัง DOM พร้อม) -->
+  <script src="game.js" defer></script>
 </body>
 </html>
