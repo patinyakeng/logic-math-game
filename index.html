@@ -15,7 +15,7 @@
 
     <!-- Start Screen -->
     <section id="start-screen" class="card">
-      <h2>เริ่มต้น</h2>
+      <h2>ชื่อผู้เล่น</h2>
       <label class="lbl">ชื่อ - ห้อง/เลขที่ (เช่น ปฏิญ 4/3 - 15)</label>
       <input id="player-id" type="text" placeholder="พิมพ์ที่นี่..." />
       <button id="start-btn" class="primary large">เลือกระดับความท้าทาย</button>
@@ -23,16 +23,17 @@
 
     <!-- Main Menu -->
     <section id="menu-screen" class="card hidden">
-      <h2>หน้าหลัก</h2>
+      <h2>เลือกระดับความท้าทาย</h2>
       <div class="row">
-        <label for="difficulty" class="lbl">เลือกระดับความยาก (1–10):</label>
+        <label for="difficulty" class="lbl">(1–10):</label>
         <input id="difficulty" type="range" min="1" max="10" value="3" oninput="document.getElementById('diff-val').textContent=this.value" />
         <span id="diff-val" class="badge">3</span>
       </div>
       <div class="formula">
-        สูตรคะแนน: <strong>(100 + 5×เวลาที่เหลือ)</strong> × <strong>ระดับความยาก</strong><br/>
-        ผิด: <span class="neg">−200 × ระดับความยาก</span> • ข้าม: <span class="muted">ไม่เสียคะแนน</span><br/>
-        เริ่มต้นแต่ละข้อจะว่าง ให้ผู้เล่นเลือกค่า <strong>T/F</strong> เอง
+        คะแนนจะขึ้นอยู่กับระดับความยากที่เลือกและระยะเวลาที่ใช้ในแต่ละข้อ
+        <strong>ตอบถูก</strong> : (100 + 5×เวลาที่เหลือ)×ระดับความยาก<br/>
+        <strong>ตอบผิด</strong> : −200 × ระดับความยาก<br/>
+        <strong>กดข้าม/หมดเวลา</strong> : ไม่เสียคะแนน<br/>
       </div>
       <div class="row">
         <button id="play-btn" class="primary large">เริ่มเกม (10 ข้อ)</button>
@@ -81,7 +82,7 @@
 
     <!-- Leaderboard Screen -->
     <section id="leaderboard-screen" class="card hidden">
-      <h2>สถิติที่ผ่านมา (เครื่องนี้)</h2>
+      <h2>สถิติการเล่น(เฉพาะอุปกรณ์นี้)</h2>
       <div id="leaderboard"></div>
       <div class="row">
         <button id="leaderboard-back" class="primary large">กลับหน้าหลัก</button>
