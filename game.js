@@ -153,21 +153,31 @@
   // - reject if all-T or all-F would satisfy target
   // - require existence of at least one mixed assignment that satisfies target
   function generateQuestion(){
-    const nLeaves = state.difficulty + 1;
-    let trials = 0;
-    while(true){
-      trials++;
-      const tree = randomTree(nLeaves);
-      const target = Math.random()<0.5;
+  const nLeaves = state.difficulty + 1;
+  let trials = 0;
+  while(true){
+    trials++;
+    const tree = randomTree(nLeaves);
+    const target = Math.random() < 0.5;
+
+    // --- เงื่อนไขกันเดา: ใช้เฉพาะระดับ > 1 ---
+    if (state.difficulty > 1) {
       const allT = Array(nLeaves).fill(true);
       const allF = Array(nLeaves).fill(false);
       const valAllT = evalTree(tree, allT);
       const valAllF = evalTree(tree, allF);
-      if(valAllT===target || valAllF===target) continue; // avoid trivial "all same" answers
-      if(!hasMixedSolution(tree, target, nLeaves)) continue; // must have a mixed T/F solution
-      return {tree, target};
+
+      // คัดทิ้งโจทย์ที่ all-T หรือ all-F ให้ค่าเท่ากับเป้าหมาย
+      if (valAllT === target || valAllF === target) continue;
+
+      // ต้องมีอย่างน้อย 1 ค่าผสม T/F ที่ทำให้ได้เป้าหมาย
+      if (!hasMixedSolution(tree, target, nLeaves)) continue;
     }
+    // ---------------------------------------------
+
+    return { tree, target };
   }
+}
 
   function newQuestion(){
     if(state.finished) return;
