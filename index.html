@@ -3,25 +3,21 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>เกมตรรกศาสตร์ : การสร้างประพจน์</title>
+  <title>เกมตรรกศาสตร์ : การสร้างประพจน์ (v4)</title>
   <link rel="stylesheet" href="style.css"/>
 </head>
 <body>
   <div class="container">
     <header>
       <h1>เกมตรรกศาสตร์ : การสร้างประพจน์</h1>
-      <p class="subtitle">โดย คุณครูปฏิญญา มุ่งหมาย กลุ่มสาระการเรียนรู้คณิตศาสตร์ โรงเรียนขอนแก่นวิทยายน</p>
+      <p class="subtitle">เวอร์ชัน 4 — โดย คุณครูปฏิญญา มุ่งหมาย กลุ่มสาระการเรียนรู้คณิตศาสตร์ โรงเรียนขอนแก่นวิทยายน</p>
     </header>
-
-    <!-- Start Screen -->
     <section id="start-screen" class="card">
       <h2>เริ่มต้น</h2>
-      <label class="lbl">ชื่อ - ห้อง/เลขที่ (เช่น ปฏิญ 4/3 - 15)</label>
+      <label class="lbl">ชื่อ - ห้อง/เลขที่</label>
       <input id="player-id" type="text" placeholder="พิมพ์ที่นี่..." />
       <button id="start-btn" class="primary large">เลือกระดับความท้าทาย</button>
     </section>
-
-    <!-- Main Menu -->
     <section id="menu-screen" class="card hidden">
       <h2>หน้าหลัก</h2>
       <div class="row">
@@ -39,8 +35,6 @@
       </div>
       <div id="last-player" class="muted"></div>
     </section>
-
-    <!-- Game Screen -->
     <section id="game-screen" class="card hidden">
       <div class="hud">
         <div>ผู้เล่น: <span id="hud-player">-</span></div>
@@ -48,27 +42,15 @@
         <div>ข้อที่: <span id="hud-q">1/10</span></div>
         <div class="score">คะแนน: <span id="hud-score">0</span></div>
       </div>
-
-      <div id="timer-wrap">
-        <div id="timer-bar"></div>
-        <span id="timer-text">--</span>
-      </div>
-
-      <div id="target" class="target">
-        คำตอบที่ต้องการ: <span id="target-val" class="badge large">T</span>
-      </div>
-
-      <div id="expression" class="expression singleline" title="เลื่อนซ้าย/ขวาได้หากยาวเกินจอ"></div>
-
+      <div id="timer-wrap"><div id="timer-bar"></div><span id="timer-text">--</span></div>
+      <div id="target" class="target">คำตอบที่ต้องการ: <span id="target-val" class="badge large">T</span></div>
+      <div id="expression" class="expression singleline"></div>
       <div class="row centered">
         <button id="check-btn" class="primary large">ตรวจคำตอบ</button>
         <button id="skip-btn" class="ghost large">ข้าม</button>
       </div>
-
       <div id="feedback" class="feedback"></div>
     </section>
-
-    <!-- Summary Screen -->
     <section id="summary-screen" class="card hidden">
       <h2>สรุปผล</h2>
       <div id="summary"></div>
@@ -77,8 +59,6 @@
         <button id="play-again-btn" class="ghost large">เล่นอีกครั้ง</button>
       </div>
     </section>
-
-    <!-- Leaderboard Screen -->
     <section id="leaderboard-screen" class="card hidden">
       <h2>สถิติที่ผ่านมา (เครื่องนี้)</h2>
       <div id="leaderboard"></div>
