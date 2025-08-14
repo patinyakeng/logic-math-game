@@ -177,23 +177,42 @@ function updateDifficultyTheme() {
 
   // Timer
   function setTimer(seconds){
-    clearInterval(state.timer.id);
-    state.timer.max=seconds; state.timer.left=seconds;
-    timerText.textContent=`${Math.ceil(state.timer.left)} วิ`; timerBar.style.width='100%';
-    state.timer.id=setInterval(()=>{
-      state.timer.left-=0.1;
-      if(state.timer.left<=0){
-        clearInterval(state.timer.id);
-        state.timer.left=0; timerText.textContent='หมดเวลา'; timerBar.style.width='0%';
-        lockInputs(true);
-        feedback.innerHTML='<span class="incorrect">หมดเวลา! ลองข้อถัดไปนะ</span>';
-        if(!state.finished) setTimeout(nextQuestion, 800);
-      }else{
-        timerText.textContent=`${Math.ceil(state.timer.left)} วิ`;
-        timerBar.style.width=((state.timer.left/state.timer.max)*100)+'%';
-      }
-    },100);
+  clearInterval(state.timer.id);
+  state.timer.max = seconds;
+  state.timer.left = seconds;
+
+  // เริ่มต้น: สี = ฟ้า (t=0)
+  timerText.textContent = `${Math.ceil(state.timer.left)} วิ`;
+  timerBar.style.width = '100%';
+  {
+    const usedT = 0;                        // ใช้เวลาไป 0%
+    const color = colorFromT(usedT);        // ฟ้า
+    timerBar.style.backgroundColor = color;
   }
+
+  state.timer.id = setInterval(()=>{
+    state.timer.left -= 0.1;
+    const left = Math.max(0, state.timer.left);
+    const fracLeft = left / state.timer.max;      // 1 → เวลาเต็ม, 0 → หมดเวลา
+    const usedT = 1 - fracLeft;                   // 0 → ฟ้า, 1 → แดงเข้ม
+    const color = colorFromT(usedT);
+
+    if(left <= 0){
+      clearInterval(state.timer.id);
+      state.timer.left = 0;
+      timerText.textContent = 'หมดเวลา';
+      timerBar.style.width = '0%';
+      timerBar.style.backgroundColor = color;     // สีสุดท้าย = แดงเข้ม
+      lockInputs(true);
+      feedback.innerHTML = '<span class="incorrect">หมดเวลา! ลองข้อถัดไปนะ</span>';
+      if(!state.finished) setTimeout(nextQuestion, 800);
+    }else{
+      timerText.textContent = `${Math.ceil(left)} วิ`;
+      timerBar.style.width = (fracLeft*100) + '%';
+      timerBar.style.backgroundColor = color;
+    }
+  }, 100);
+}
   function lockInputs(disabled){
     state.current.selects.forEach(sel=>sel.disabled=disabled);
     checkBtn.disabled=disabled; skipBtn.disabled=disabled;
