@@ -50,7 +50,7 @@ input[type=text]{
   width:100%;padding:14px 16px;border-radius:14px;border:1px solid var(--border);
   background:#fff;color:var(--text);font-size:18px
 }
-.lbl{font-size:18px}
+.lbl{font-size:18px; display:block;} /* NEW: ให้ label เป็นบล็อก จะได้จัดกึ่งกลางง่าย */
 
 .badge{
   background:#eef4ff;border:1px solid #cfe1ff;color:#0b3a8a;
@@ -62,7 +62,12 @@ input[type=text]{
   position:relative;background:#f1f4fb;border:1px solid var(--border);height:22px;
   border-radius:14px;overflow:hidden;margin:10px 0
 }
-#timer-bar{position:absolute;left:0;top:0;bottom:0;width:100%;background:var(--accent);transition:width .2s linear;}
+/* NEW: เพิ่ม transition ให้ background ด้วย เพื่อให้สีไหลลื่น */
+#timer-bar{
+  position:absolute;left:0;top:0;bottom:0;width:100%;
+  background:var(--accent);
+  transition:width .2s linear, background .2s linear; /* NEW */
+}
 #timer-text{position:absolute;right:8px;top:-30px;color:var(--muted);font-size:14px}
 
 .target{font-size:20px;margin:12px 0}
@@ -123,9 +128,10 @@ input[type="range"]::-webkit-slider-thumb {
   height: 22px;
   border-radius: 50%;
   border: 2px solid #fff;
-  background: #0a84ff;            /* จะถูก JS เขียนทับให้ตรงกับสีระดับ */
+  background: var(--thumb-color, #0a84ff);  /* NEW: รับสีจาก JS */
   box-shadow: 0 0 0 1px rgba(0,0,0,.06);
   margin-top: -6px; /* ยก thumb ให้อยู่กึ่งกลางราง */
+  transition: background .2s linear; /* NEW: ไหลลื่นตอนเปลี่ยนสี */
 }
 input[type="range"]::-moz-range-track {
   height: 10px;
@@ -144,9 +150,18 @@ input[type="range"]::-moz-range-thumb {
   border: none;
 }
 
-/* (เสริม) ให้ JS ใส่ --thumb-color สำหรับ WebKit */
-input[type="range"]::-webkit-slider-thumb { background: var(--thumb-color, #0a84ff); }
-
+/* ตาราง Top10 */
 .top10-table table{ width:100%; border-collapse:collapse; font-size:16px }
 .top10-table th, .top10-table td{ border:1px solid var(--border); padding:8px 10px; text-align:left }
 .top10-table th{ background:#f2f6ff }
+
+/* ===== Center everything on the Start Screen ===== */
+/* จัดกึ่งกลางทั้งบรรทัดในหน้าเริ่มต้น */
+#start-screen { text-align:center; }                /* NEW: ให้ข้อความกึ่งกลาง */
+#start-screen .row { justify-content:center; }      /* NEW: แถวปุ่ม/สไลเดอร์อยู่กลาง */
+#start-screen .lbl { margin-bottom:6px; }           /* ระยะห่างเล็กน้อย */
+#start-screen input[type="text"]{
+  max-width:560px;                                  /* NEW: ไม่ให้กว้างทั้งบรรทัดจนเกินไป */
+  margin:0 auto; display:block;                     /* NEW: กล่อง input อยู่กลางจริง ๆ */
+}
+#start-screen .primary.large { margin-top:12px; }   /* NEW: ระยะห่างปุ่ม */
