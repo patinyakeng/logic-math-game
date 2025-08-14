@@ -95,23 +95,41 @@
   }
 
   // Render blank selects (no default)
-  function renderTreeBlank(node){
-    if(node.type==='leaf'){
-      const tok=document.createElement('div'); tok.className='token';
-      const sel=document.createElement('select'); sel.className='tf placeholder';
-      const opt0=document.createElement('option'); opt0.value=''; opt0.textContent='—'; opt0.disabled=true; opt0.selected=true;
-      const optT=document.createElement('option'); optT.value='T'; optT.textContent='T';
-      const optF=document.createElement('option'); optF.value='F'; optF.textContent='F';
-      sel.appendChild(opt0); sel.appendChild(optT); sel.appendChild(optF);
-      tok.appendChild(sel); expression.appendChild(tok);
-      state.current.selects.push(sel); return;
-    }
-    const lpar=document.createElement('div'); lpar.className='paren'; lpar.textContent='('; expression.appendChild(lpar);
-    renderTreeBlank(node.left);
-    const opEl=document.createElement('div'); opEl.className='operator'; opEl.textContent=node.op; expression.appendChild(opEl);
-    renderTreeBlank(node.right);
-    const rpar=document.createElement('div'); rpar.className='paren'; rpar.textContent=')'; expression.appendChild(rpar);
+  function renderTreeBlank(node, depth = 0){
+  if(node.type === 'leaf'){
+    const tok = document.createElement('div'); tok.className = 'token';
+    const sel = document.createElement('select'); sel.className = 'tf placeholder';
+    const opt0 = document.createElement('option'); opt0.value = ''; opt0.textContent = '—'; opt0.disabled = true; opt0.selected = true;
+    const optT = document.createElement('option'); optT.value = 'T'; optT.textContent = 'T';
+    const optF = document.createElement('option'); optF.value = 'F'; optF.textContent = 'F';
+    sel.appendChild(opt0); sel.appendChild(optT); sel.appendChild(optF);
+    tok.appendChild(sel); expression.appendChild(tok);
+    state.current.selects.push(sel);
+    return;
   }
+
+  const depthClass = `paren-depth-${depth % 6}`;
+
+  const lpar = document.createElement('div');
+  lpar.className = 'paren ' + depthClass;
+  lpar.textContent = '(';
+  expression.appendChild(lpar);
+
+  renderTreeBlank(node.left, depth + 1);
+
+  const opEl = document.createElement('div');
+  opEl.className = 'operator';
+  opEl.textContent = node.op;
+  expression.appendChild(opEl);
+
+  renderTreeBlank(node.right, depth + 1);
+
+  const rpar = document.createElement('div');
+  rpar.className = 'paren ' + depthClass;
+  rpar.textContent = ')';
+  expression.appendChild(rpar);
+}
+
 
   // Search for non-trivial satisfying assignment
   function hasMixedSolution(tree, target, nLeaves){
@@ -187,7 +205,7 @@
     state.current.target = q.target;
     hudQ.textContent=`${state.qIndex+1}/${state.totalQ}`;
     targetVal.textContent = state.current.target ? 'T' : 'F';
-    renderTreeBlank(state.current.tree);
+    renderTreeBlank(state.current.tree, 0);
     feedback.textContent=''; lockInputs(false);
     setTimer(secondsForDifficulty(state.difficulty));
   }
