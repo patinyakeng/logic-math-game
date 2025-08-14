@@ -62,7 +62,7 @@ input[type=text]{
   position:relative;background:#f1f4fb;border:1px solid var(--border);height:22px;
   border-radius:14px;overflow:hidden;margin:10px 0
 }
-#timer-bar{position:absolute;left:0;top:0;bottom:0;width:100%;background:var(--accent);transition:width .2s}
+#timer-bar{position:absolute;left:0;top:0;bottom:0;width:100%;background:var(--accent);transition:width .2s linear;}
 #timer-text{position:absolute;right:8px;top:-30px;color:var(--muted);font-size:14px}
 
 .target{font-size:20px;margin:12px 0}
