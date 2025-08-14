@@ -310,6 +310,12 @@ function updateDifficultyTheme() {
     setTimeout(nextQuestion, 700);
   }
 
+  // เรียกครั้งแรกตอนโหลด
+updateDifficultyTheme();
+
+// เวลาเลื่อนสไลเดอร์ ให้เปลี่ยนสีตามค่า
+diffSlider.addEventListener('input', updateDifficultyTheme);
+
   // Events
   startBtn.addEventListener('click', ()=>{
     const name = playerIdInput.value.trim();
