@@ -79,6 +79,7 @@ input[type=text]{
 select.tf{
   padding:8px;border-radius:12px;border:1px solid #d6def5;background:#fff;color:var(--text);font-size:18px
 }
+select.tf.placeholder{color:#999}
 .operator{font-size:28px;color:#304b9a;padding:0 2px}
 .paren{font-size:30px;color:#20bcae}
 

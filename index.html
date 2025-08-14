@@ -3,14 +3,14 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>เกมตรรกศาสตร์ : การสร้างประพจน์ (v4)</title>
+  <title>เกมตรรกศาสตร์ : การสร้างประพจน์</title>
   <link rel="stylesheet" href="style.css"/>
 </head>
 <body>
   <div class="container">
     <header>
       <h1>เกมตรรกศาสตร์ : การสร้างประพจน์</h1>
-      <p class="subtitle">เวอร์ชัน 4 — โดย คุณครูปฏิญญา มุ่งหมาย กลุ่มสาระการเรียนรู้คณิตศาสตร์ โรงเรียนขอนแก่นวิทยายน</p>
+      <p class="subtitle">โดย คุณครูปฏิญญา มุ่งหมาย กลุ่มสาระการเรียนรู้คณิตศาสตร์ โรงเรียนขอนแก่นวิทยายน</p>
     </header>
 
     <!-- Start Screen -->
@@ -31,8 +31,8 @@
       </div>
       <div class="formula">
         สูตรคะแนน: <strong>(100 + 5×เวลาที่เหลือ)</strong> × <strong>ระดับความยาก</strong><br/>
-        ตอบผิด: <span class="neg">−200</span> คะแนน • ข้าม: <span class="muted">ไม่เสียคะแนน</span><br/>
-        <em>กติกาเพิ่ม:</em> ต้องใช้ <strong>T</strong> และ <strong>F</strong> อย่างน้อยอย่างละ 1 ตัวในนิพจน์
+        ผิด: <span class="neg">−200 × ระดับความยาก</span> • ข้าม: <span class="muted">ไม่เสียคะแนน</span><br/>
+        เริ่มต้นแต่ละข้อจะว่าง ให้ผู้เล่นเลือกค่า <strong>T/F</strong> เอง
       </div>
       <div class="row">
         <button id="play-btn" class="primary large">เริ่มเกม (10 ข้อ)</button>
@@ -59,7 +59,7 @@
         คำตอบที่ต้องการ: <span id="target-val" class="badge large">T</span>
       </div>
 
-      <div id="expression" class="expression singleline" title="เลื่อนซ้าย/ขวาได้หากยาวเกินจอ"></div>
+      <div id="expression" class="expression singleline" title="เลือกค่า T/F ให้ครบทุกตำแหน่ง"></div>
 
       <div class="row centered">
         <button id="check-btn" class="primary large">ตรวจคำตอบ</button>

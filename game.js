@@ -1,40 +1,41 @@
-// Logic Game (Parentheses) — v4: enforce using both T and F + full timer/HUD
+// Logic Game (Parentheses) — v5 fixes
 (function(){
   const $ = (sel) => document.querySelector(sel);
 
+  // Screens
   const startScreen = $('#start-screen');
   const menuScreen = $('#menu-screen');
   const gameScreen = $('#game-screen');
   const summaryScreen = $('#summary-screen');
   const leaderboardScreen = $('#leaderboard-screen');
 
+  // Controls
   const playerIdInput = $('#player-id');
   const startBtn = $('#start-btn');
   const playBtn = $('#play-btn');
   const leaderboardBtn = $('#leaderboard-btn');
   const leaderboardBack = $('#leaderboard-back');
 
+  // HUD
   const hudPlayer = $('#hud-player');
   const hudDiff = $('#hud-diff');
   const hudQ = $('#hud-q');
   const hudScore = $('#hud-score');
-
   const timerBar = $('#timer-bar');
   const timerText = $('#timer-text');
 
+  // Game UI
   const targetVal = $('#target-val');
   const expression = $('#expression');
-
   const checkBtn = $('#check-btn');
   const skipBtn = $('#skip-btn');
   const feedback = $('#feedback');
 
+  // Summary & menu
   const backMenuBtn = $('#back-menu-btn');
   const playAgainBtn = $('#play-again-btn');
-
   const diffSlider = $('#difficulty');
   const lastPlayer = $('#last-player');
-
   const summaryDiv = $('#summary');
   const leaderboardDiv = $('#leaderboard');
 
@@ -48,14 +49,25 @@
     score: 0,
     correct: 0,
     times: [],
-    current: { tree:null, leaves:[], target:true },
+    current: { tree:null, selects:[], target:true },
     timer: { max:30, left:30, id:null },
     finished: false,
     hasSaved: false
   };
 
+  // Helpers
+  function secondsForDifficulty(d){
+    // linear 1->10s ... 10->60s
+    const sec = 10 + (d-1)*(50/9);
+    return Math.round(sec);
+  }
+  function show(el){ el.classList.remove('hidden'); }
+  function hide(el){ el.classList.add('hidden'); }
+  function updateHudScore(){ hudScore.textContent = state.score; }
+
+  // Tree
   function randomTree(nLeaves){
-    let idx = 0;
+    let idx=0;
     function build(n){
       if(n===1) return {type:'leaf', index: idx++};
       const split = 1 + Math.floor(Math.random()*(n-1));
@@ -66,22 +78,6 @@
     }
     return build(nLeaves);
   }
-
-  function renderTreeToDOM(node){
-    if(node.type==='leaf'){
-      const tok=document.createElement('div'); tok.className='token';
-      const sel=document.createElement('select'); sel.className='tf';
-      sel.innerHTML='<option value="T">T</option><option value="F">F</option>';
-      tok.appendChild(sel); expression.appendChild(tok);
-      state.current.leaves.push(sel); return;
-    }
-    const lpar=document.createElement('div'); lpar.className='paren'; lpar.textContent='('; expression.appendChild(lpar);
-    renderTreeToDOM(node.left);
-    const opEl=document.createElement('div'); opEl.className='operator'; opEl.textContent=node.op; expression.appendChild(opEl);
-    renderTreeToDOM(node.right);
-    const rpar=document.createElement('div'); rpar.className='paren'; rpar.textContent=')'; expression.appendChild(rpar);
-  }
-
   function opEval(a,op,b){
     switch(op){
       case '∧': return a && b;
@@ -98,23 +94,36 @@
     return opEval(lv, node.op, rv);
   }
 
-  function randomTarget(){ return Math.random()<0.5; }
-  function secondsForDifficulty(d){ return Math.max(15, 45-3*d); }
-
-  function show(el){ el.classList.remove('hidden'); }
-  function hide(el){ el.classList.add('hidden'); }
-
-  function renderLeaderboard(){
-    let rows=[];
-    try{ rows = JSON.parse(localStorage.getItem('logic_game_results_paren')||'[]').reverse(); }catch(e){ rows=[]; }
-    if(rows.length===0){ leaderboardDiv.innerHTML='<p class="muted">ยังไม่มีสถิติ</p>'; return; }
-    let html='<table><thead><tr><th>เวลา</th><th>ผู้เล่น</th><th>ยาก</th><th>คะแนน</th><th>ถูก</th><th>เวลาเฉลี่ย/ข้อ</th></tr></thead><tbody>';
-    for(const r of rows){
-      html+=`<tr><td>${r.timestamp}</td><td>${r.player}</td><td>${r.difficulty}</td><td>${r.score}</td><td>${r.correct}/${r.totalQ}</td><td>${r.avgTime.toFixed(1)} วิ</td></tr>`;
+  // Render blank selects (no default)
+  function renderTreeBlank(node){
+    if(node.type==='leaf'){
+      const tok=document.createElement('div'); tok.className='token';
+      const sel=document.createElement('select'); sel.className='tf placeholder';
+      const opt0=document.createElement('option'); opt0.value=''; opt0.textContent='—'; opt0.disabled=true; opt0.selected=true;
+      const optT=document.createElement('option'); optT.value='T'; optT.textContent='T';
+      const optF=document.createElement('option'); optF.value='F'; optF.textContent='F';
+      sel.appendChild(opt0); sel.appendChild(optT); sel.appendChild(optF);
+      tok.appendChild(sel); expression.appendChild(tok);
+      state.current.selects.push(sel); return;
     }
-    html+='</tbody></table>'; leaderboardDiv.innerHTML=html;
+    const lpar=document.createElement('div'); lpar.className='paren'; lpar.textContent='('; expression.appendChild(lpar);
+    renderTreeBlank(node.left);
+    const opEl=document.createElement('div'); opEl.className='operator'; opEl.textContent=node.op; expression.appendChild(opEl);
+    renderTreeBlank(node.right);
+    const rpar=document.createElement('div'); rpar.className='paren'; rpar.textContent=')'; expression.appendChild(rpar);
   }
 
+  // Search for non-trivial satisfying assignment
+  function hasMixedSolution(tree, target, nLeaves){
+    const total = 1<<nLeaves;
+    for(let mask=1; mask<total-1; mask++){ // skip all-0 and all-1
+      const vals = Array.from({length:nLeaves}, (_,i)=> !!(mask & (1<<i)));
+      if(evalTree(tree, vals) === target) return true;
+    }
+    return false;
+  }
+
+  // Timer
   function setTimer(seconds){
     clearInterval(state.timer.id);
     state.timer.max=seconds; state.timer.left=seconds;
@@ -133,39 +142,42 @@
       }
     },100);
   }
-
   function lockInputs(disabled){
-    state.current.leaves.forEach(sel=>sel.disabled=disabled);
+    state.current.selects.forEach(sel=>sel.disabled=disabled);
     checkBtn.disabled=disabled; skipBtn.disabled=disabled;
   }
 
-  function updateHudScore(){ hudScore.textContent = state.score; }
-
-  function ensureAtLeastOneTandF(){
-    const values = state.current.leaves.map(sel=>sel.value);
-    const hasT = values.includes('T');
-    const hasF = values.includes('F');
-    if(!(hasT && hasF)){
-      // Flip one item to guarantee both exist
-      const i = Math.floor(Math.random()*state.current.leaves.length);
-      state.current.leaves[i].value = hasT ? 'F' : 'T';
+  // Generate question with constraints:
+  // - target random
+  // - blank literals (no default)
+  // - reject if all-T or all-F would satisfy target
+  // - require existence of at least one mixed assignment that satisfies target
+  function generateQuestion(){
+    const nLeaves = state.difficulty + 1;
+    let trials = 0;
+    while(true){
+      trials++;
+      const tree = randomTree(nLeaves);
+      const target = Math.random()<0.5;
+      const allT = Array(nLeaves).fill(true);
+      const allF = Array(nLeaves).fill(false);
+      const valAllT = evalTree(tree, allT);
+      const valAllF = evalTree(tree, allF);
+      if(valAllT===target || valAllF===target) continue; // avoid trivial "all same" answers
+      if(!hasMixedSolution(tree, target, nLeaves)) continue; // must have a mixed T/F solution
+      return {tree, target};
     }
   }
 
   function newQuestion(){
     if(state.finished) return;
-    expression.innerHTML=''; state.current.leaves=[];
-    const nLeaves = state.difficulty+1;
-    state.current.tree = randomTree(nLeaves);
-    state.current.target = randomTarget();
+    expression.innerHTML=''; state.current.selects=[];
+    const q = generateQuestion();
+    state.current.tree = q.tree;
+    state.current.target = q.target;
     hudQ.textContent=`${state.qIndex+1}/${state.totalQ}`;
-    targetVal.textContent = state.current.target ? 'T':'F';
-    renderTreeToDOM(state.current.tree);
-
-    // Random initial fill then enforce diversity
-    state.current.leaves.forEach(sel=>{ sel.value = (Math.random()<0.5?'T':'F'); });
-    ensureAtLeastOneTandF();
-
+    targetVal.textContent = state.current.target ? 'T' : 'F';
+    renderTreeBlank(state.current.tree);
     feedback.textContent=''; lockInputs(false);
     setTimer(secondsForDifficulty(state.difficulty));
   }
@@ -195,7 +207,6 @@
       <p><strong>ตอบถูก:</strong> ${state.correct}/${state.totalQ}</p>
       <p><strong>เวลาเฉลี่ย/ข้อ:</strong> ${avg.toFixed(1)} วิ</p>
     `;
-
     if(!state.hasSaved){
       state.hasSaved = true;
       try{
@@ -207,31 +218,32 @@
     }
   }
 
+  function allSelected(){
+    return state.current.selects.every(sel => sel.value==='T' || sel.value==='F');
+  }
+
   function checkAnswer(){
     if(state.finished) return;
-    const values = state.current.leaves.map(sel=>sel.value);
-    const hasT = values.includes('T');
-    const hasF = values.includes('F');
-    if(!(hasT && hasF)){
-      feedback.innerHTML = '<span class="muted">ต้องมีทั้ง <strong>T</strong> และ <strong>F</strong> อย่างน้อยอย่างละ 1 ตัวก่อนตรวจคำตอบ</span>';
+    if(!allSelected()){
+      feedback.innerHTML = '<span class="muted">โปรดเลือกค่า T/F ให้ครบทุกตำแหน่งก่อนตรวจคำตอบ</span>';
       return;
     }
-
     clearInterval(state.timer.id);
     lockInputs(true);
-    const vals = values.map(v=>v==='T');
+    const vals = state.current.selects.map(sel => sel.value==='T');
     const val = evalTree(state.current.tree, vals);
-    const correct = (val===state.current.target);
+    const correct = (val === state.current.target);
     if(correct){
       const remaining = Math.max(0, state.timer.left);
       const gained = Math.floor((100 + 5*remaining) * state.difficulty);
       state.score += gained; state.correct += 1;
       updateHudScore();
-      feedback.innerHTML=`<span class="correct">ถูกต้อง! +${gained} คะแนน</span>`;
+      feedback.innerHTML = `<span class="correct">ถูกต้อง! +${gained} คะแนน</span>`;
     }else{
-      state.score -= 200;
+      const penalty = 200 * state.difficulty;
+      state.score -= penalty;
       updateHudScore();
-      feedback.innerHTML=`<span class="incorrect">ตอบผิด −200 คะแนน (ผลลัพธ์ที่ต้องการคือ ${state.current.target?'T':'F'})</span>`;
+      feedback.innerHTML = `<span class="incorrect">ตอบผิด −${penalty} คะแนน</span>`;
     }
     setTimeout(nextQuestion, 700);
   }
@@ -244,7 +256,6 @@
     hide(startScreen); show(menuScreen);
     lastPlayer.textContent=`ผู้เล่นล่าสุด: ${name}`;
   });
-
   playBtn.addEventListener('click', ()=>{
     state.player = (localStorage.getItem('logic_game_last_player') || playerIdInput.value.trim());
     state.difficulty = parseInt(diffSlider.value,10);
@@ -252,7 +263,6 @@
     hudPlayer.textContent=state.player||'-'; hudDiff.textContent=state.difficulty; updateHudScore();
     hide(menuScreen); hide(summaryScreen); show(gameScreen); newQuestion();
   });
-
   leaderboardBtn.addEventListener('click', ()=>{ hide(menuScreen); show(leaderboardScreen); renderLeaderboard(); });
   leaderboardBack.addEventListener('click', ()=>{ hide(leaderboardScreen); show(menuScreen); });
   backMenuBtn.addEventListener('click', ()=>{ hide(summaryScreen); show(menuScreen); });
@@ -261,7 +271,6 @@
     state.qIndex=0; state.score=0; state.correct=0; state.times=[]; state.finished=false; state.hasSaved=false; updateHudScore();
     newQuestion();
   });
-
   $('#check-btn').addEventListener('click', checkAnswer);
   $('#skip-btn').addEventListener('click', ()=>{
     if(state.finished) return;
@@ -270,6 +279,17 @@
     setTimeout(nextQuestion, 400);
   });
 
+  function renderLeaderboard(){
+    let rows=[];
+    try{ rows = JSON.parse(localStorage.getItem('logic_game_results_paren')||'[]').reverse(); }catch(e){ rows=[]; }
+    if(rows.length===0){ leaderboardDiv.innerHTML='<p class="muted">ยังไม่มีสถิติ</p>'; return; }
+    let html='<table><thead><tr><th>เวลา</th><th>ผู้เล่น</th><th>ยาก</th><th>คะแนน</th><th>ถูก</th><th>เวลาเฉลี่ย/ข้อ</th></tr></thead><tbody>';
+    for(const r of rows){
+      html+=`<tr><td>${r.timestamp}</td><td>${r.player}</td><td>${r.difficulty}</td><td>${r.score}</td><td>${r.correct}/${r.totalQ}</td><td>${r.avgTime.toFixed(1)} วิ</td></tr>`;
+    }
+    html+='</tbody></table>'; leaderboardDiv.innerHTML=html;
+  }
+
   const last = (localStorage.getItem('logic_game_last_player')||'');
-  if(last){ playerIdInput.value=last; lastPlayer.textContent=`ผู้เล่นล่าสุด: ${last}`; }
+  if(last){ playerIdInput.value=last; lastPlayer.textContent = `ผู้เล่นล่าสุด: ${last}`; }
 })();
