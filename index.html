@@ -29,6 +29,10 @@
         <input id="difficulty" type="range" min="1" max="10" value="3" oninput="document.getElementById('diff-val').textContent=this.value" />
         <span id="diff-val" class="badge">3</span>
       </div>
+      <div class="formula">
+        สูตรคะแนน: <strong>(100 + 5×เวลาที่เหลือ)</strong> × <strong>ระดับความยาก</strong><br/>
+        ตอบผิด: <span class="neg">−200</span> คะแนน • ข้าม: <span class="muted">ไม่เสียคะแนน</span>
+      </div>
       <div class="row">
         <button id="play-btn" class="primary large">เริ่มเกม (10 ข้อ)</button>
         <button id="leaderboard-btn" class="ghost large">ดูสถิติที่ผ่านมา</button>
@@ -42,7 +46,7 @@
         <div>ผู้เล่น: <span id="hud-player">-</span></div>
         <div>ความยาก: <span id="hud-diff">-</span></div>
         <div>ข้อที่: <span id="hud-q">1/10</span></div>
-        <div>คะแนน: <span id="hud-score">0</span></div>
+        <div class="score">คะแนน: <span id="hud-score">0</span></div>
       </div>
 
       <div id="timer-wrap">

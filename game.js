@@ -1,4 +1,4 @@
-// Logic Game (Parentheses) — No-duplicate save guard
+// Logic Game (Parentheses) — v3 scoring & UX updates
 (function(){
   const $ = (sel) => document.querySelector(sel);
 
@@ -50,8 +50,8 @@
     times: [],
     current: { tree:null, leaves:[], target:true },
     timer: { max:30, left:30, id:null },
-    finished: false,   // prevent double endGame
-    hasSaved: false    // save once per playthrough
+    finished: false,
+    hasSaved: false
   };
 
   function boolToTF(b){ return b ? 'T' : 'F'; }
@@ -75,6 +75,8 @@
       const tok=document.createElement('div'); tok.className='token';
       const sel=document.createElement('select'); sel.className='tf';
       sel.innerHTML='<option value="T">T</option><option value="F">F</option>';
+      // randomize initial selection T/F
+      sel.value = (Math.random() < 0.5) ? 'T' : 'F';
       tok.appendChild(sel); expression.appendChild(tok);
       state.current.leaves.push(sel); return;
     }
@@ -109,16 +111,13 @@
 
   function renderLeaderboard(){
     let rows=[];
-    try{
-      rows = JSON.parse(localStorage.getItem('logic_game_results_paren')||'[]').reverse();
-    }catch(e){ rows=[]; }
+    try{ rows = JSON.parse(localStorage.getItem('logic_game_results_paren')||'[]').reverse(); }catch(e){ rows=[]; }
     if(rows.length===0){ leaderboardDiv.innerHTML='<p class="muted">ยังไม่มีสถิติ</p>'; return; }
     let html='<table><thead><tr><th>เวลา</th><th>ผู้เล่น</th><th>ยาก</th><th>คะแนน</th><th>ถูก</th><th>เวลาเฉลี่ย/ข้อ</th></tr></thead><tbody>';
     for(const r of rows){
       html+=`<tr><td>${r.timestamp}</td><td>${r.player}</td><td>${r.difficulty}</td><td>${r.score}</td><td>${r.correct}/${r.totalQ}</td><td>${r.avgTime.toFixed(1)} วิ</td></tr>`;
     }
-    html+='</tbody></table>';
-    leaderboardDiv.innerHTML=html;
+    html+='</tbody></table>'; leaderboardDiv.innerHTML=html;
   }
 
   function setTimer(seconds){
@@ -145,8 +144,10 @@
     checkBtn.disabled=disabled; skipBtn.disabled=disabled;
   }
 
+  function updateHudScore(){ hudScore.textContent = state.score; }
+
   function newQuestion(){
-    if(state.finished) return; // safeguard
+    if(state.finished) return;
     expression.innerHTML=''; state.current.leaves=[];
     const nLeaves = state.difficulty+1;
     state.current.tree = randomTree(nLeaves);
@@ -159,7 +160,7 @@
   }
 
   function nextQuestion(){
-    if(state.finished) return; // prevent post-finish call
+    if(state.finished) return;
     state.times.push(state.timer.max - state.timer.left);
     state.qIndex += 1;
     if(state.qIndex >= state.totalQ){
@@ -184,7 +185,6 @@
       <p><strong>เวลาเฉลี่ย/ข้อ:</strong> ${avg.toFixed(1)} วิ</p>
     `;
 
-    // Save ONCE
     if(!state.hasSaved){
       state.hasSaved = true;
       try{
@@ -204,12 +204,16 @@
     const val = evalTree(state.current.tree, vals);
     const correct = (val===state.current.target);
     if(correct){
-      const timeBonus=Math.floor(state.timer.left*5);
-      const base=120; const gained=Math.max(0, base+timeBonus);
+      // gain = (100 + 5*remainingSeconds) * difficulty
+      const remaining = Math.max(0, state.timer.left);
+      const gained = Math.floor((100 + 5*remaining) * state.difficulty);
       state.score += gained; state.correct += 1;
+      updateHudScore();
       feedback.innerHTML=`<span class="correct">ถูกต้อง! +${gained} คะแนน</span>`;
     }else{
-      feedback.innerHTML=`<span class="incorrect">ยังไม่ตรงผลลัพธ์ ${state.current.target?'T':'F'}</span>`;
+      state.score -= 200; // wrong answer penalty
+      updateHudScore();
+      feedback.innerHTML=`<span class="incorrect">ตอบผิด −200 คะแนน (ผลลัพธ์ที่ต้องการคือ ${state.current.target?'T':'F'})</span>`;
     }
     setTimeout(nextQuestion, 700);
   }
@@ -226,9 +230,8 @@
   playBtn.addEventListener('click', ()=>{
     state.player = (localStorage.getItem('logic_game_last_player') || playerIdInput.value.trim());
     state.difficulty = parseInt(diffSlider.value,10);
-    state.qIndex=0; state.totalQ=10; state.score=0; state.correct=0; state.times=[];
-    state.finished=false; state.hasSaved=false;
-    hudPlayer.textContent=state.player||'-'; hudDiff.textContent=state.difficulty;
+    state.qIndex=0; state.totalQ=10; state.score=0; state.correct=0; state.times=[]; state.finished=false; state.hasSaved=false;
+    hudPlayer.textContent=state.player||'-'; hudDiff.textContent=state.difficulty; updateHudScore();
     hide(menuScreen); hide(summaryScreen); show(gameScreen); newQuestion();
   });
 
@@ -237,7 +240,7 @@
   backMenuBtn.addEventListener('click', ()=>{ hide(summaryScreen); show(menuScreen); });
   playAgainBtn.addEventListener('click', ()=>{
     hide(summaryScreen); show(gameScreen);
-    state.qIndex=0; state.score=0; state.correct=0; state.times=[]; state.finished=false; state.hasSaved=false;
+    state.qIndex=0; state.score=0; state.correct=0; state.times=[]; state.finished=false; state.hasSaved=false; updateHudScore();
     newQuestion();
   });
 
@@ -245,7 +248,7 @@
   $('#skip-btn').addEventListener('click', ()=>{
     if(state.finished) return;
     clearInterval(state.timer.id);
-    feedback.innerHTML='<span class="muted">ข้ามข้อนี้</span>';
+    feedback.innerHTML='<span class="muted">ข้ามข้อนี้ (ไม่เสียคะแนน)</span>';
     setTimeout(nextQuestion, 400);
   });
 
