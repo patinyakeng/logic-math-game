@@ -82,6 +82,13 @@ select.tf{
 select.tf.placeholder{color:#999}
 .operator{font-size:28px;color:#304b9a;padding:0 2px}
 .paren{font-size:30px;color:#20bcae}
+/* วางต่อจาก .paren {...} */
+.paren-depth-0 { color: #1E90FF; }  /* น้ำเงิน */
+.paren-depth-1 { color: #32CD32; }  /* เขียว */
+.paren-depth-2 { color: #FF8C00; }  /* ส้ม */
+.paren-depth-3 { color: #8A2BE2; }  /* ม่วง */
+.paren-depth-4 { color: #DC143C; }  /* แดง */
+.paren-depth-5 { color: #20B2AA; }  /* ฟ้าเขียว */
 
 .feedback{margin-top:8px;min-height:28px;font-size:18px}
 .correct{color:var(--success);font-weight:700}
