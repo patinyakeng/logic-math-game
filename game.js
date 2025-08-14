@@ -1,4 +1,4 @@
-// Logic Game (Parentheses) — v5 fixes
+// Logic Game (Parentheses) — v5 + Top10 (Google Sheets) + colorized timer/slider + colored parentheses
 (function(){
   const $ = (sel) => document.querySelector(sel);
 
@@ -55,50 +55,92 @@
     hasSaved: false
   };
 
-  // Helpers
+  // ====== Google Apps Script endpoint ======
+  const API_URL = 'https://script.google.com/macros/s/XXXXXXXXXXXX/exec'; // <-- ใส่ของครู
+
+  async function submitScore(payload){
+    try{
+      await fetch(API_URL, {
+        method:'POST',
+        headers:{ 'Content-Type':'application/json' },
+        body: JSON.stringify(payload)
+      });
+    }catch(e){
+      console.warn('submitScore error', e);
+    }
+  }
+
+  async function fetchTop10() {
+    try{
+      const res = await fetch(`${API_URL}?action=top10`, { method:'GET' });
+      const data = await res.json();
+      if(!data.ok) throw new Error(data.error || 'fetch top10 failed');
+      return data.top || [];
+    }catch(e){
+      console.warn('Top10 error:', e);
+      return [];
+    }
+  }
+
+  function renderTop10(list, mountEl) {
+    if(!mountEl) return;
+    if(!list.length){
+      mountEl.innerHTML = '<div class="muted">ยังไม่มีข้อมูล</div>';
+      return;
+    }
+    let html = '<table><thead><tr><th>#</th><th>ชื่อ</th><th>ยาก</th><th>คะแนน</th></tr></thead><tbody>';
+    list.forEach((r,i)=>{
+      html += `<tr>
+        <td>${i+1}</td>
+        <td>${escapeHtml(r.player || '-')}</td>
+        <td>${r.difficulty ?? '-'}</td>
+        <td>${r.score ?? '-'}</td>
+      </tr>`;
+    });
+    html += '</tbody></table>';
+    mountEl.innerHTML = html;
+  }
+
+  // ป้องกัน XSS ง่าย ๆ
+  function escapeHtml(s){
+    return String(s||'').replace(/[&<>"']/g, c=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+  }
+
+  // ===== Helpers =====
+  // เวลา: ยาก1=10s → ยาก10=60s (แก้เป็น 10 + 5.555*(d-1) ถ้าอยากกลับไป 60 วินาที)
   function secondsForDifficulty(d){
-    const sec = 10 + (d-1)*(7);
+    // เวอร์ชันที่คุณตั้งไว้: 10 + 7*(d-1)  → ยาก10 = 73s
+    const sec = 10 + (d-1)*7;
     return Math.round(sec);
   }
   function show(el){ el.classList.remove('hidden'); }
   function hide(el){ el.classList.add('hidden'); }
   function updateHudScore(){ hudScore.textContent = state.score; }
 
-  // ===== Color helpers: ฟ้า(ระดับต่ำ/เวลาเยอะ) → แดงเข้ม(ระดับสูง/เวลาใกล้หมด) =====
-// t ∈ [0,1] ; 0 = ฟ้า, 1 = แดงเข้ม
-function colorFromT(t) {
-  // ใช้ HSL ไล่ hue: ฟ้า ~210° → แดง ~0°
-  const hue = 210 * (1 - t);      // t=0 -> 210 (ฟ้า), t=1 -> 0 (แดง)
-  const sat = 90;                  // saturation %
-  const light = 50;                // lightness  %
-  return `hsl(${hue}, ${sat}%, ${light}%)`;
-}
+  // ===== สี: ฟ้า(น้อย) → แดง(มาก) =====
+  function colorFromT(t) {
+    const hue = 210 * (1 - t);   // 0→ฟ้า(210), 1→แดง(0)
+    const sat = 90, light = 50;
+    return `hsl(${hue}, ${sat}%, ${light}%)`;
+  }
 
-// อัปเดตสีของสไลเดอร์ความยาก + ป้ายค่า
-function updateDifficultyTheme() {
-  const slider = document.getElementById('difficulty');
-  const badge  = document.getElementById('diff-val');
-  const min = parseInt(slider.min || '1', 10);
-  const max = parseInt(slider.max || '10', 10);
-  const val = parseInt(slider.value, 10);
+  function updateDifficultyTheme() {
+    const slider = document.getElementById('difficulty');
+    const badge  = document.getElementById('diff-val');
+    const min = parseInt(slider.min || '1', 10);
+    const max = parseInt(slider.max || '10', 10);
+    const val = parseInt(slider.value, 10);
+    const t = (val - min) / (max - min);
+    const color = colorFromT(t);
+    const pct = ((val - min) / (max - min)) * 100;
 
-  // ทำให้ t = 0 เมื่อระดับต่ำสุด, 1 เมื่อระดับสูงสุด
-  const t = (val - min) / (max - min);
-  const color = colorFromT(t);
-  const pct = ((val - min) / (max - min)) * 100;
+    slider.style.background = `linear-gradient(to right, ${color} 0%, ${color} ${pct}%, #e6e9f2 ${pct}%, #e6e9f2 100%)`;
+    slider.style.setProperty('--thumb-color', color);
+    badge.style.background = color;
+    badge.style.border = `1px solid ${color}`;
+  }
 
-  // รางไล่สีด้านซ้ายเป็นสีตามระดับ, ด้านขวาเทา
-  slider.style.background = `linear-gradient(to right, ${color} 0%, ${color} ${pct}%, #e6e9f2 ${pct}%, #e6e9f2 100%)`;
-  // หัวแม่มือให้เข้ากับสี
-  slider.style.setProperty('--thumb-color', color);
-  // Firefox ไม่มีตัวแปรนี้ ให้ใช้ inline กับ ::-moz-range-thumb ไม่ได้ จึงพอแค่ track ก็โอเค
-
-  // ป้ายค่าความยาก ไล่สีตาม
-  badge.style.background = color;
-  badge.style.border = `1px solid ${color}`;
-}
-
-  // Tree
+  // ===== นิพจน์แบบต้นไม้ + วงเล็บสีตามชั้น =====
   function randomTree(nLeaves){
     let idx=0;
     function build(n){
@@ -127,127 +169,106 @@ function updateDifficultyTheme() {
     return opEval(lv, node.op, rv);
   }
 
-  // Render blank selects (no default)
   function renderTreeBlank(node, depth = 0){
-  if(node.type === 'leaf'){
-    const tok = document.createElement('div'); tok.className = 'token';
-    const sel = document.createElement('select'); sel.className = 'tf placeholder';
-    const opt0 = document.createElement('option'); opt0.value = ''; opt0.textContent = '—'; opt0.disabled = true; opt0.selected = true;
-    const optT = document.createElement('option'); optT.value = 'T'; optT.textContent = 'T';
-    const optF = document.createElement('option'); optF.value = 'F'; optF.textContent = 'F';
-    sel.appendChild(opt0); sel.appendChild(optT); sel.appendChild(optF);
-    tok.appendChild(sel); expression.appendChild(tok);
-    state.current.selects.push(sel);
-    return;
+    if(node.type === 'leaf'){
+      const tok = document.createElement('div'); tok.className = 'token';
+      const sel = document.createElement('select'); sel.className = 'tf placeholder';
+      const opt0 = document.createElement('option'); opt0.value = ''; opt0.textContent = '—'; opt0.disabled = true; opt0.selected = true;
+      const optT = document.createElement('option'); optT.value = 'T'; optT.textContent = 'T';
+      const optF = document.createElement('option'); optF.value = 'F'; optF.textContent = 'F';
+      sel.appendChild(opt0); sel.appendChild(optT); sel.appendChild(optF);
+      tok.appendChild(sel); expression.appendChild(tok);
+      state.current.selects.push(sel);
+      return;
+    }
+    const depthClass = `paren-depth-${depth % 6}`;
+
+    const lpar = document.createElement('div');
+    lpar.className = 'paren ' + depthClass;
+    lpar.textContent = '(';
+    expression.appendChild(lpar);
+
+    renderTreeBlank(node.left, depth + 1);
+
+    const opEl = document.createElement('div');
+    opEl.className = 'operator';
+    opEl.textContent = node.op;
+    expression.appendChild(opEl);
+
+    renderTreeBlank(node.right, depth + 1);
+
+    const rpar = document.createElement('div');
+    rpar.className = 'paren ' + depthClass;
+    rpar.textContent = ')';
+    expression.appendChild(rpar);
   }
 
-  const depthClass = `paren-depth-${depth % 6}`;
-
-  const lpar = document.createElement('div');
-  lpar.className = 'paren ' + depthClass;
-  lpar.textContent = '(';
-  expression.appendChild(lpar);
-
-  renderTreeBlank(node.left, depth + 1);
-
-  const opEl = document.createElement('div');
-  opEl.className = 'operator';
-  opEl.textContent = node.op;
-  expression.appendChild(opEl);
-
-  renderTreeBlank(node.right, depth + 1);
-
-  const rpar = document.createElement('div');
-  rpar.className = 'paren ' + depthClass;
-  rpar.textContent = ')';
-  expression.appendChild(rpar);
-}
-
-
-  // Search for non-trivial satisfying assignment
   function hasMixedSolution(tree, target, nLeaves){
     const total = 1<<nLeaves;
-    for(let mask=1; mask<total-1; mask++){ // skip all-0 and all-1
+    for(let mask=1; mask<total-1; mask++){ // ข้าม all-0 และ all-1
       const vals = Array.from({length:nLeaves}, (_,i)=> !!(mask & (1<<i)));
       if(evalTree(tree, vals) === target) return true;
     }
     return false;
   }
 
-  // Timer
+  // ===== Timer (สีไล่ตามเวลา) =====
   function setTimer(seconds){
-  clearInterval(state.timer.id);
-  state.timer.max = seconds;
-  state.timer.left = seconds;
+    clearInterval(state.timer.id);
+    state.timer.max = seconds;
+    state.timer.left = seconds;
 
-  // เริ่มต้น: สี = ฟ้า (t=0)
-  timerText.textContent = `${Math.ceil(state.timer.left)} วิ`;
-  timerBar.style.width = '100%';
-  {
-    const usedT = 0;                        // ใช้เวลาไป 0%
-    const color = colorFromT(usedT);        // ฟ้า
-    timerBar.style.background = color;
+    timerText.textContent = `${Math.ceil(state.timer.left)} วิ`;
+    timerBar.style.width = '100%';
+    timerBar.style.background = colorFromT(0); // ฟ้า
+
+    state.timer.id = setInterval(()=>{
+      state.timer.left -= 0.1;
+      const left = Math.max(0, state.timer.left);
+      const fracLeft = left / state.timer.max; // 1→เต็ม, 0→หมด
+      const usedT = 1 - fracLeft;              // 0→ฟ้า, 1→แดง
+      const color = colorFromT(usedT);
+
+      if(left <= 0){
+        clearInterval(state.timer.id);
+        state.timer.left = 0;
+        timerText.textContent = 'หมดเวลา';
+        timerBar.style.width = '0%';
+        timerBar.style.background = color;
+        lockInputs(true);
+        feedback.innerHTML = '<span class="incorrect">หมดเวลา! ลองข้อถัดไปนะ</span>';
+        if(!state.finished) setTimeout(nextQuestion, 800);
+      }else{
+        timerText.textContent = `${Math.ceil(left)} วิ`;
+        timerBar.style.width = (fracLeft*100) + '%';
+        timerBar.style.background = color;
+      }
+    }, 100);
   }
 
-  state.timer.id = setInterval(()=>{
-    state.timer.left -= 0.1;
-    const left = Math.max(0, state.timer.left);
-    const fracLeft = left / state.timer.max;      // 1 → เวลาเต็ม, 0 → หมดเวลา
-    const usedT = 1 - fracLeft;                   // 0 → ฟ้า, 1 → แดงเข้ม
-    const color = colorFromT(usedT);
-
-    if(left <= 0){
-      clearInterval(state.timer.id);
-      state.timer.left = 0;
-      timerText.textContent = 'หมดเวลา';
-      timerBar.style.width = '0%';
-      timerBar.style.background = color;     // สีสุดท้าย = แดงเข้ม
-      lockInputs(true);
-      feedback.innerHTML = '<span class="incorrect">หมดเวลา! ลองข้อถัดไปนะ</span>';
-      if(!state.finished) setTimeout(nextQuestion, 800);
-    }else{
-      timerText.textContent = `${Math.ceil(left)} วิ`;
-      timerBar.style.width = (fracLeft*100) + '%';
-      timerBar.style.background = color;
-    }
-  }, 100);
-}
   function lockInputs(disabled){
     state.current.selects.forEach(sel=>sel.disabled=disabled);
     checkBtn.disabled=disabled; skipBtn.disabled=disabled;
   }
 
-  // Generate question with constraints:
-  // - target random
-  // - blank literals (no default)
-  // - reject if all-T or all-F would satisfy target
-  // - require existence of at least one mixed assignment that satisfies target
+  // ===== สุ่มโจทย์ (กันเดา) =====
   function generateQuestion(){
-  const nLeaves = state.difficulty + 1;
-  let trials = 0;
-  while(true){
-    trials++;
-    const tree = randomTree(nLeaves);
-    const target = Math.random() < 0.5;
+    const nLeaves = state.difficulty + 1;
+    while(true){
+      const tree = randomTree(nLeaves);
+      const target = Math.random() < 0.5;
 
-    // --- เงื่อนไขกันเดา: ใช้เฉพาะระดับ > 1 ---
-    if (state.difficulty > 1) {
-      const allT = Array(nLeaves).fill(true);
-      const allF = Array(nLeaves).fill(false);
-      const valAllT = evalTree(tree, allT);
-      const valAllF = evalTree(tree, allF);
-
-      // คัดทิ้งโจทย์ที่ all-T หรือ all-F ให้ค่าเท่ากับเป้าหมาย
-      if (valAllT === target || valAllF === target) continue;
-
-      // ต้องมีอย่างน้อย 1 ค่าผสม T/F ที่ทำให้ได้เป้าหมาย
-      if (!hasMixedSolution(tree, target, nLeaves)) continue;
+      if (state.difficulty > 1) {
+        const allT = Array(nLeaves).fill(true);
+        const allF = Array(nLeaves).fill(false);
+        const valAllT = evalTree(tree, allT);
+        const valAllF = evalTree(tree, allF);
+        if (valAllT === target || valAllF === target) continue; // กัน all-same
+        if (!hasMixedSolution(tree, target, nLeaves)) continue;  // ต้องมีชุดผสม
+      }
+      return { tree, target };
     }
-    // ---------------------------------------------
-
-    return { tree, target };
   }
-}
 
   function newQuestion(){
     if(state.finished) return;
@@ -287,15 +308,26 @@ function updateDifficultyTheme() {
       <p><strong>ตอบถูก:</strong> ${state.correct}/${state.totalQ}</p>
       <p><strong>เวลาเฉลี่ย/ข้อ:</strong> ${avg.toFixed(1)} วิ</p>
     `;
+
+    // ส่งขึ้นชีต (ครั้งเดียว)
     if(!state.hasSaved){
       state.hasSaved = true;
-      try{
-        const key='logic_game_results_paren';
-        const arr=JSON.parse(localStorage.getItem(key)||'[]');
-        arr.push({timestamp:stamp, player:state.player, difficulty:state.difficulty, score:state.score, correct:state.correct, totalQ:state.totalQ, avgTime:avg});
-        localStorage.setItem(key, JSON.stringify(arr));
-      }catch(e){}
+      const payload = {
+        timestamp: stamp,
+        player: state.player,
+        difficulty: state.difficulty,
+        score: state.score,
+        correct: state.correct,
+        totalQ: state.totalQ,
+        avgTime: +avg.toFixed(2)
+      };
+      submitScore(payload);
     }
+
+    // โหลด Top10 สำหรับหน้าสรุป
+    fetchTop10().then(list => {
+      renderTop10(list, document.getElementById('top10-summary-table'));
+    });
   }
 
   function allSelected(){
@@ -315,12 +347,12 @@ function updateDifficultyTheme() {
     const correct = (val === state.current.target);
     if(correct){
       const remaining = Math.max(0, state.timer.left);
-      const gained = Math.floor((100 + 10*remaining) * state.difficulty);
+      const gained = Math.floor((100 + 10*remaining) * state.difficulty); // สูตรที่คุณตั้งไว้
       state.score += gained; state.correct += 1;
       updateHudScore();
       feedback.innerHTML = `<span class="correct">ถูกต้อง! +${gained} คะแนน</span>`;
     }else{
-      const penalty = 100 * state.difficulty;
+      const penalty = 100 * state.difficulty; // สูตรที่คุณตั้งไว้
       state.score -= penalty;
       updateHudScore();
       feedback.innerHTML = `<span class="incorrect">ตอบผิด −${penalty} คะแนน</span>`;
@@ -328,20 +360,24 @@ function updateDifficultyTheme() {
     setTimeout(nextQuestion, 700);
   }
 
-  // เรียกครั้งแรกตอนโหลด
-updateDifficultyTheme();
+  // ==== Theme init ====
+  updateDifficultyTheme();
+  diffSlider.addEventListener('input', updateDifficultyTheme);
 
-// เวลาเลื่อนสไลเดอร์ ให้เปลี่ยนสีตามค่า
-diffSlider.addEventListener('input', updateDifficultyTheme);
-
-  // Events
+  // ==== Events ====
   startBtn.addEventListener('click', ()=>{
     const name = playerIdInput.value.trim();
     if(!name){ playerIdInput.focus(); playerIdInput.placeholder='กรุณากรอกชื่อก่อนครับ'; return; }
     try{ localStorage.setItem('logic_game_last_player', name);}catch(e){}
     hide(startScreen); show(menuScreen);
     lastPlayer.textContent=`ผู้เล่นล่าสุด: ${name}`;
+
+    // โหลด Top10 ที่หน้าเมนู
+    fetchTop10().then(list => {
+      renderTop10(list, document.getElementById('top10-menu-table'));
+    });
   });
+
   playBtn.addEventListener('click', ()=>{
     state.player = (localStorage.getItem('logic_game_last_player') || playerIdInput.value.trim());
     state.difficulty = parseInt(diffSlider.value,10);
@@ -349,16 +385,31 @@ diffSlider.addEventListener('input', updateDifficultyTheme);
     hudPlayer.textContent=state.player||'-'; hudDiff.textContent=state.difficulty; updateHudScore();
     hide(menuScreen); hide(summaryScreen); show(gameScreen); newQuestion();
   });
+
   leaderboardBtn.addEventListener('click', ()=>{ hide(menuScreen); show(leaderboardScreen); renderLeaderboard(); });
-  leaderboardBack.addEventListener('click', ()=>{ hide(leaderboardScreen); show(menuScreen); });
-  backMenuBtn.addEventListener('click', ()=>{ hide(summaryScreen); show(menuScreen); });
+
+  backMenuBtn.addEventListener('click', ()=>{
+    hide(summaryScreen); show(menuScreen);
+    fetchTop10().then(list => {
+      renderTop10(list, document.getElementById('top10-menu-table'));
+    });
+  });
+
+  leaderboardBack.addEventListener('click', ()=>{
+    hide(leaderboardScreen); show(menuScreen);
+    fetchTop10().then(list => {
+      renderTop10(list, document.getElementById('top10-menu-table'));
+    });
+  });
+
   playAgainBtn.addEventListener('click', ()=>{
     hide(summaryScreen); show(gameScreen);
     state.qIndex=0; state.score=0; state.correct=0; state.times=[]; state.finished=false; state.hasSaved=false; updateHudScore();
     newQuestion();
   });
-  $('#check-btn').addEventListener('click', checkAnswer);
-  $('#skip-btn').addEventListener('click', ()=>{
+
+  checkBtn.addEventListener('click', checkAnswer);
+  skipBtn.addEventListener('click', ()=>{
     if(state.finished) return;
     clearInterval(state.timer.id);
     feedback.innerHTML='<span class="muted">ข้ามข้อนี้ (ไม่เสียคะแนน)</span>';
@@ -375,6 +426,14 @@ diffSlider.addEventListener('input', updateDifficultyTheme);
     }
     html+='</tbody></table>'; leaderboardDiv.innerHTML=html;
   }
+
+  // โหลด Top10 หน้าครั้งแรก (ถ้าครูอยากให้ขึ้นเลยก่อนกดปุ่ม)
+  document.addEventListener('DOMContentLoaded', ()=>{
+    const mount = document.getElementById('top10-menu-table');
+    if(mount){
+      fetchTop10().then(list => renderTop10(list, mount));
+    }
+  });
 
   const last = (localStorage.getItem('logic_game_last_player')||'');
   if(last){ playerIdInput.value=last; lastPlayer.textContent = `ผู้เล่นล่าสุด: ${last}`; }
