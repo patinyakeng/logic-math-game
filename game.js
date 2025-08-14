@@ -3,7 +3,7 @@
   const $ = (sel) => document.querySelector(sel);
 
   // ========= CONFIG (ใส่ URL ของครู) =========
-  const API_URL = "https://script.google.com/macros/s/AKfycbxxokMr-09y-ITa18VyS8lzMQEJ22vIiUAGVz4-l_spRlM5bFTlUXrZpVsO2oddyIer/exec";
+  const API_URL = "https://script.google.com/macros/s/AKfycbxjMVs7xBnLolRW_yJg9s6Va_-4cxvQJ6Lj9VGdx_rwvzEvPP9IHjjtiyyUV8447G9L/exec";
 
   // ========= Screens / DOM =========
   const startScreen = $("#start-screen");
