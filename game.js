@@ -1,10 +1,10 @@
-// Logic Game (Parentheses) — Stable build (Sheets + Top10 + debug + UI polish)
+// Logic Game (Parentheses) — Stable build (Google Sheets + Top10 + debug)
 (function () {
   const $ = (sel) => document.querySelector(sel);
 
   // ========= CONFIG =========
-  // ใช้ URL Web App ล่าสุดของครู
-  const API_URL = "https://script.google.com/macros/s/AKfycbwninqR9N1uUYo_9hXrz-umnX1On7RtHQZqM40UzFOQRdN8kB4CCOWBl8HURBUeCOaT/exec";
+  // ใส่ URL Web App ล่าสุดของครู ( /exec )
+  const API_URL = "https://script.google.com/macros/s/AKfycbxv-cl6AwbWMJwtaCXcGZbaZUpNBPhZdgRCX6aAVvFkeJkyDWhCCRC0b5CS9gWU_BlN/exec";
 
   // ========= Screens / DOM =========
   const startScreen = $("#start-screen");
@@ -119,6 +119,7 @@
     return opEval(lv, node.op, rv);
   }
 
+  // แสดงต้นไม้แบบ “เว้นช่องให้เลือก T/F”
   function renderTreeBlank(node, depth = 0) {
     if (node.type === "leaf") {
       const tok = document.createElement("div"); tok.className = "token";
@@ -144,6 +145,7 @@
     expression.appendChild(rpar);
   }
 
+  // กันโจทย์เดาง่าย: ต้องมีคำตอบแบบ T/F ผสมที่ทำให้ได้ target และไม่ใช่ all-T/all-F
   function hasMixedSolution(tree, target, nLeaves) {
     const total = 1 << nLeaves;
     for (let mask = 1; mask < total - 1; mask++) { // ข้าม all-0 และ all-1
@@ -191,7 +193,7 @@
     checkBtn.disabled = disabled; skipBtn.disabled = disabled;
   }
 
-  // ===== Question Generator (anti-guess) =====
+  // ===== Question Generator =====
   function generateQuestion() {
     const nLeaves = state.difficulty + 1;
     while (true) {
@@ -254,21 +256,51 @@
     }
   }
 
+  // ตาราง 6 คอลัมน์: Ranking | Player | Challenge | Score | Correct/Total | AvgTime
   function renderTop10(list, mountEl) {
     if (!mountEl) return;
     if (!list.length) {
       mountEl.innerHTML = '<div class="muted">ยังไม่มีข้อมูล</div>';
       return;
     }
-    let html = '<table><thead><tr><th>#</th><th>ชื่อ</th><th>ยาก</th><th>คะแนน</th></tr></thead><tbody>';
-    list.forEach((r, i) => {
-      html += `<tr>
-        <td>${i + 1}</td>
-        <td>${escapeHtml(r.player || "-")}</td>
-        <td>${r.difficulty ?? "-"}</td>
-        <td>${r.score ?? "-"}</td>
-      </tr>`;
+
+    // เรียงคะแนนมาก -> น้อย เพื่อชัวร์
+    const sorted = [...list].sort((a, b) => (b.score ?? 0) - (a.score ?? 0));
+
+    let html = `
+      <table class="t10">
+        <thead>
+          <tr>
+            <th>Ranking</th>
+            <th>Player</th>
+            <th>Challenge</th>
+            <th>Score</th>
+            <th>Correct/Total</th>
+            <th>AvgTime</th>
+          </tr>
+        </thead>
+        <tbody>
+    `;
+
+    sorted.forEach((r, i) => {
+      const player = escapeHtml(r.player || '-');
+      const challenge = r.challenge ?? '-'; // ระดับความยาก
+      const score = r.score ?? '-';
+      const correctTotal = (r.correct != null && r.totalQ != null) ? `${r.correct}/${r.totalQ}` : '-';
+      const avg = (Number(r.avgTime) || 0).toFixed(2);
+
+      html += `
+        <tr>
+          <td>${i + 1}</td>
+          <td class="name">${player}</td>
+          <td>${challenge}</td>
+          <td>${score}</td>
+          <td>${correctTotal}</td>
+          <td>${avg}</td>
+        </tr>
+      `;
     });
+
     html += "</tbody></table>";
     mountEl.innerHTML = html;
   }
@@ -316,14 +348,14 @@
       const payload = {
         timestamp: stamp,
         player: state.player,
-        difficulty: state.difficulty,
+        challenge: state.difficulty,   // บันทึกเป็น challenge
         score: state.score,
         correct: state.correct,
         totalQ: state.totalQ,
         avgTime: +avg.toFixed(2),
       };
       submitScore(payload).then(() => {
-        // หน่วงเล็กน้อยให้แถวใหม่ถูก append ก่อน แล้วค่อยดึง Top10
+        // หน่วงเล็กน้อยให้ appendRow เสร็จก่อน แล้วค่อยดึง Top10
         setTimeout(() => {
           fetchTop10().then((list) =>
             renderTop10(list, document.getElementById("top10-summary-table"))
