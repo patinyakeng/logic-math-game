@@ -1,9 +1,10 @@
-// Logic Game (Parentheses) — Stable build (score sending + Top10 + debug + UI polish)
+// Logic Game (Parentheses) — Stable build (Sheets + Top10 + debug + UI polish)
 (function () {
   const $ = (sel) => document.querySelector(sel);
 
-  // ========= CONFIG (ใส่ URL ของครู) =========
-  const API_URL = "https://script.google.com/macros/s/AKfycbxjMVs7xBnLolRW_yJg9s6Va_-4cxvQJ6Lj9VGdx_rwvzEvPP9IHjjtiyyUV8447G9L/exec";
+  // ========= CONFIG =========
+  // ใช้ URL Web App ล่าสุดของครู
+  const API_URL = "https://script.google.com/macros/s/AKfycbz_rrzSOhX7HQIIZ8DShqRL8cDrMG0m1cOUGITqOgpIGMZbEasZqDV9WjrSgNcb1qq3/exec";
 
   // ========= Screens / DOM =========
   const startScreen = $("#start-screen");
@@ -248,7 +249,7 @@
       console.log("Top10 data:", data);
       return data.top || [];
     } catch (e) {
-      console.error("Top10 fetch error:", e);
+      console.error("Top10 error:", e);
       return [];
     }
   }
@@ -272,7 +273,7 @@
     mountEl.innerHTML = html;
   }
 
-  // ส่งคะแนนแบบ x-www-form-urlencoded (no preflight) + log
+  // ส่งคะแนนแบบ x-www-form-urlencoded (ลดปัญหา CORS) + log
   async function submitScore(payload) {
     console.log("ส่งคะแนนไปชีต:", payload);
     try {
@@ -322,7 +323,7 @@
         avgTime: +avg.toFixed(2),
       };
       submitScore(payload).then(() => {
-        // รอแป๊บให้ชีต append เสร็จ แล้วค่อยดึง Top10 อัพเดต
+        // หน่วงเล็กน้อยให้แถวใหม่ถูก append ก่อน แล้วค่อยดึง Top10
         setTimeout(() => {
           fetchTop10().then((list) =>
             renderTop10(list, document.getElementById("top10-summary-table"))
@@ -330,7 +331,6 @@
         }, 800);
       });
     } else {
-      // เผื่อกรณีพิเศษ
       fetchTop10().then((list) =>
         renderTop10(list, document.getElementById("top10-summary-table"))
       );
@@ -356,12 +356,12 @@
 
     if (correct) {
       const remaining = Math.max(0, state.timer.left);
-      const gained = Math.floor((100 + 10 * remaining) * state.difficulty); // สูตรคะแนนตอบถูก
+      const gained = Math.floor((100 + 10 * remaining) * state.difficulty);
       state.score += gained; state.correct += 1;
       updateHudScore();
       feedback.innerHTML = `<span class="correct">ถูกต้อง! +${gained} คะแนน</span>`;
     } else {
-      const penalty = 100 * state.difficulty; // โทษตอบผิด
+      const penalty = 100 * state.difficulty;
       state.score -= penalty;
       updateHudScore();
       feedback.innerHTML = `<span class="incorrect">ตอบผิด −${penalty} คะแนน</span>`;
@@ -369,7 +369,7 @@
     setTimeout(nextQuestion, 700);
   }
 
-  // ===== Local-only Leaderboard (หน้า "สถิติที่ผ่านมา" ในเครื่อง) =====
+  // ===== Local-only Leaderboard (ในอุปกรณ์นี้) =====
   function renderLeaderboard() {
     let rows = [];
     try { rows = JSON.parse(localStorage.getItem("logic_game_results_paren") || "[]").reverse(); }
