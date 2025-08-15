@@ -4,7 +4,7 @@
 
   // ========= CONFIG =========
   // ใช้ URL Web App ล่าสุดของครู
-  const API_URL = "https://script.google.com/macros/s/AKfycbz_rrzSOhX7HQIIZ8DShqRL8cDrMG0m1cOUGITqOgpIGMZbEasZqDV9WjrSgNcb1qq3/exec";
+  const API_URL = "https://script.google.com/macros/s/AKfycbwninqR9N1uUYo_9hXrz-umnX1On7RtHQZqM40UzFOQRdN8kB4CCOWBl8HURBUeCOaT/exec";
 
   // ========= Screens / DOM =========
   const startScreen = $("#start-screen");
