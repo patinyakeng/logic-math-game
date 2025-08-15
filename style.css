@@ -165,3 +165,8 @@ input[type="range"]::-moz-range-thumb {
   margin:0 auto; display:block;                     /* NEW: กล่อง input อยู่กลางจริง ๆ */
 }
 #start-screen .primary.large { margin-top:12px; }   /* NEW: ระยะห่างปุ่ม */
+
+.top10-table table{ width:100%; border-collapse:collapse; font-size:16px }
+.top10-table th, .top10-table td{ border:1px solid var(--border); padding:8px 10px; text-align:center }
+.top10-table th{ background:#f2f6ff }
+.top10-table td.name{ text-align:left }   /* เฉพาะข้อมูล Player ให้ชิดซ้าย */
