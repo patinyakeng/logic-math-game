@@ -130,7 +130,7 @@
     if (state.mode === "practice") {
       $("#level-details").innerHTML = `โจทย์แต่ละข้อมี <strong>${level} ตัวเชื่อม</strong> และ <strong>${level + 1} ช่อง T/F</strong> ความลึก ${depthText} ชั้น`;
     } else {
-      const bonus = state.studentType === "general" ? 3 : 2;
+      const bonus = state.studentType === "general" ? 3 : 1;
       $("#level-details").innerHTML = `โจทย์แต่ละข้อมี <strong>${level} ตัวเชื่อม</strong> และ <strong>${level + 1} ช่อง T/F</strong><br>คะแนนเต็ม <strong>${level + bonus}</strong> คะแนน ผิดหรือหมดเวลาหักข้อละ 1 คะแนน`;
     }
   }
@@ -314,7 +314,7 @@
   }
 
   function testScore() {
-    const bonus = state.studentType === "general" ? 3 : 2;
+    const bonus = state.studentType === "general" ? 3 : 1;
     const wrong = state.totalQ - state.correct;
     return Math.max(0, state.difficulty + bonus - wrong);
   }

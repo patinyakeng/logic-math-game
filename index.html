@@ -98,7 +98,7 @@
     <div class="modal-panel">
       <button id="close-modal-btn" class="modal-close" aria-label="ปิด">×</button>
       <h2 id="test-modal-title">เลือกประเภทแบบทดสอบ</h2>
-      <p class="privacy-note">เมื่อทำครบ 10 ข้อ ผลแบบทดสอบจะถูกบันทึกลงใน Server ของครูผู้สอน (ข้อมูลของผู้เล่นจะไม่แสดงบนเว็บไซต์นี้)</p>
+      <p class="privacy-note">เมื่อทำครบ 10 ข้อ ชื่อและผลแบบทดสอบจะถูกบันทึกลงใน Google Sheet ของครูผู้สอน ข้อมูลของผู้เล่นจะไม่แสดงบนเว็บไซต์นี้</p>
       <div class="test-options">
         <article class="test-option">
           <h3>นักเรียนทั่วไป</h3>
@@ -109,7 +109,7 @@
         </article>
         <article class="test-option special">
           <h3>นักเรียนห้องเรียนพิเศษ</h3>
-          <p>คะแนนเต็ม = ระดับความยาก + 2</p>
+          <p>คะแนนเต็ม = ระดับความยาก + 1</p>
           <p>ตอบผิดหรือหมดเวลา หักข้อละ 1 คะแนน</p>
           <p>คะแนนต่ำสุด 0 คะแนน</p>
           <button class="primary choose-test" data-student-type="special">เลือกแบบทดสอบนี้</button>
@@ -118,6 +118,6 @@
     </div>
   </div>
 
-  <script src="game.js?v=20260814-1" defer></script>
+  <script src="game.js?v=20260814-3" defer></script>
 </body>
 </html>
