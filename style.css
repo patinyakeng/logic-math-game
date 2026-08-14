@@ -1,172 +1,40 @@
-/* Light iOS-like theme, larger layout, single-line expression */
 *{box-sizing:border-box}
-:root{
-  --bg:#f5f7fb;
-  --card:#ffffff;
-  --text:#0b1020;
-  --muted:#667085;
-  --accent:#0a84ff;
-  --accent-ghost:#dae8ff;
-  --border:#e6e9f2;
-  --success:#198754;
-  --danger:#e03a3a;
-}
-html,body{height:100%}
-body{
-  font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Prompt", "Noto Sans Thai", sans-serif;
-  margin:0; background:var(--bg); color:var(--text);
-}
-
+:root{--bg:#f5f7fb;--card:#fff;--text:#0b1020;--muted:#667085;--accent:#0a84ff;--accent-soft:#e8f2ff;--border:#e1e7f0;--success:#198754;--danger:#d9363e}
+html,body{min-height:100%}
+body{font-family:ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans Thai",sans-serif;margin:0;background:var(--bg);color:var(--text)}
+button,input,select{font:inherit}
 .container{max-width:1400px;margin:0 auto;padding:32px}
 header{text-align:center;margin-bottom:24px}
-h1{margin:0 0 8px;font-size:40px;font-weight:800;letter-spacing:.2px}
-.subtitle{margin:0;color:var(--muted);font-size:18px}
-
-.card{
-  background:var(--card);
-  border:1px solid var(--border);
-  border-radius:20px;
-  padding:24px;
-  box-shadow:0 10px 30px rgba(10,20,60,.06);
-  margin-bottom:24px;
-}
-
-.hidden{display:none}
-.row{display:flex;gap:16px;align-items:center;flex-wrap:wrap;margin:12px 0}
-.row.centered{justify-content:center}
-.hud{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:12px;font-size:18px}
-.hud .score{text-align:right}
-
-.primary,.ghost{
-  border-radius:14px; cursor:pointer; font-weight:700;
-  padding:12px 18px; font-size:18px;
-}
-.primary{background:var(--accent);color:#fff;border:none}
-.primary:hover{filter:brightness(1.05)}
-.ghost{background:var(--accent-ghost);color:var(--accent);border:1px solid #cfe1ff}
-.large{padding:14px 22px;font-size:20px}
-
-input[type=text]{
-  width:100%;padding:14px 16px;border-radius:14px;border:1px solid var(--border);
-  background:#fff;color:var(--text);font-size:18px
-}
-.lbl{font-size:18px; display:block;} /* NEW: ให้ label เป็นบล็อก จะได้จัดกึ่งกลางง่าย */
-
-.badge{
-  background:#eef4ff;border:1px solid #cfe1ff;color:#0b3a8a;
-  padding:6px 12px;border-radius:999px;display:inline-block;min-width:32px;text-align:center;font-weight:700
-}
-.badge.large{font-size:22px;padding:8px 14px}
-
-#timer-wrap{
-  position:relative;background:#f1f4fb;border:1px solid var(--border);height:22px;
-  border-radius:14px;overflow:hidden;margin:10px 0
-}
-/* NEW: เพิ่ม transition ให้ background ด้วย เพื่อให้สีไหลลื่น */
-#timer-bar{
-  position:absolute;left:0;top:0;bottom:0;width:100%;
-  background:var(--accent);
-  transition:width .2s linear, background .2s linear; /* NEW */
-}
-#timer-text{position:absolute;right:8px;top:-30px;color:var(--muted);font-size:14px}
-
-.target{font-size:20px;margin:12px 0}
-.expression{
-  display:flex; gap:10px; align-items:center;
-  background:#f9fbff;border:1px dashed #d6def5;border-radius:14px;padding:14px;min-height:64px;
-  font-size:22px
-}
-.expression.singleline{flex-wrap:nowrap;overflow-x:auto;white-space:nowrap}
-.expression::-webkit-scrollbar{height:10px}
-.expression::-webkit-scrollbar-thumb{background:#d2dcff;border-radius:999px}
-
-.token{display:inline-flex;flex-direction:column;align-items:center;gap:6px}
-select.tf{
-  padding:8px;border-radius:12px;border:1px solid #d6def5;background:#fff;color:var(--text);font-size:18px
-}
-select.tf.placeholder{color:#999}
-.operator{font-size:28px;color:#304b9a;padding:0 2px}
-.paren{font-size:30px;color:#20bcae}
-/* วางต่อจาก .paren {...} */
-.paren-depth-0 { color: #1E90FF; }  /* น้ำเงิน */
-.paren-depth-1 { color: #32CD32; }  /* เขียว */
-.paren-depth-2 { color: #FF8C00; }  /* ส้ม */
-.paren-depth-3 { color: #8A2BE2; }  /* ม่วง */
-.paren-depth-4 { color: #DC143C; }  /* แดง */
-.paren-depth-5 { color: #20B2AA; }  /* ฟ้าเขียว */
-
-.feedback{margin-top:8px;min-height:28px;font-size:18px}
-.correct{color:var(--success);font-weight:700}
-.incorrect{color:var(--danger);font-weight:700}
-.muted{color:var(--muted);font-size:16px}
-.neg{color:var(--danger);font-weight:700}
-
-#leaderboard table{width:100%;border-collapse:collapse;font-size:16px}
-#leaderboard th,#leaderboard td{border:1px solid var(--border);padding:10px;text-align:left}
-#leaderboard th{background:#f2f6ff}
-
-.formula{background:#f6f9ff;border:1px dashed #cfe1ff;border-radius:14px;padding:12px;font-size:16px;margin:6px 0 4px}
-
-/* ===== Range slider base (ให้เห็นพื้นหลังไล่สี) ===== */
-input[type="range"] {
-  -webkit-appearance: none;
-  width: 280px;
-  height: 10px;
-  border-radius: 999px;
-  background: #e6e9f2;            /* จะถูก JS เขียนทับเป็น gradient */
-  outline: none;
-}
-input[type="range"]::-webkit-slider-runnable-track {
-  height: 10px;
-  border-radius: 999px;
-  background: transparent;
-}
-input[type="range"]::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  appearance: none;
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  border: 2px solid #fff;
-  background: var(--thumb-color, #0a84ff);  /* NEW: รับสีจาก JS */
-  box-shadow: 0 0 0 1px rgba(0,0,0,.06);
-  margin-top: -6px; /* ยก thumb ให้อยู่กึ่งกลางราง */
-  transition: background .2s linear; /* NEW: ไหลลื่นตอนเปลี่ยนสี */
-}
-input[type="range"]::-moz-range-track {
-  height: 10px;
-  border-radius: 999px;
-  background: transparent;
-}
-input[type="range"]::-moz-range-thumb {
-  width: 22px; height: 22px; border-radius: 50%;
-  border: 2px solid #fff; background: #0a84ff;
-  box-shadow: 0 0 0 1px rgba(0,0,0,.06);
-}
-
-/* ป้ายค่าความยากให้รับสีตามระดับได้ (JS จะเซ็ต inline) */
-#diff-val {
-  color: #fff;                     /* ให้อ่านชัดกับพื้นสีเข้ม */
-  border: none;
-}
-
-/* ตาราง Top10 */
-.top10-table table{ width:100%; border-collapse:collapse; font-size:16px }
-.top10-table th, .top10-table td{ border:1px solid var(--border); padding:8px 10px; text-align:left }
-.top10-table th{ background:#f2f6ff }
-
-/* ===== Center everything on the Start Screen ===== */
-/* จัดกึ่งกลางทั้งบรรทัดในหน้าเริ่มต้น */
-#start-screen { text-align:center; }                /* NEW: ให้ข้อความกึ่งกลาง */
-#start-screen .row { justify-content:center; }      /* NEW: แถวปุ่ม/สไลเดอร์อยู่กลาง */
-#start-screen .lbl { margin-bottom:6px; }           /* ระยะห่างเล็กน้อย */
-#start-screen input[type="text"]{
-  max-width:560px;                                  /* NEW: ไม่ให้กว้างทั้งบรรทัดจนเกินไป */
-  margin:0 auto; display:block;                     /* NEW: กล่อง input อยู่กลางจริง ๆ */
-}
-#start-screen .primary.large { margin-top:12px; }   /* NEW: ระยะห่างปุ่ม */
-
-.top10-table table{ width:100%; border-collapse:collapse; font-size:16px }
-.top10-table th, .top10-table td{ border:1px solid var(--border); padding:8px 10px; text-align:center }
-.top10-table th{ background:#f2f6ff }
-.top10-table td.name{ text-align:left }   /* เฉพาะข้อมูล Player ให้ชิดซ้าย */
+h1{margin:0 0 8px;font-size:clamp(28px,4vw,40px)}
+h2{margin-top:0}.subtitle{margin:0;color:var(--muted);font-size:18px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:24px;box-shadow:0 10px 30px rgba(10,20,60,.06);margin-bottom:24px}
+.hidden{display:none!important}
+.start-card{text-align:center}
+.player-form{display:grid;grid-template-columns:140px 1fr 1fr 180px 130px;gap:14px;text-align:left;align-items:end}
+.player-form label{display:grid;gap:6px;font-size:16px;font-weight:700}
+input[type="text"],input[type="number"],select{width:100%;padding:13px 14px;border:1px solid var(--border);border-radius:12px;background:#fff;color:var(--text)}
+.form-error{min-height:24px;margin-top:10px;color:var(--danger);font-weight:700}
+.mode-actions,.row{display:flex;gap:16px;align-items:center;flex-wrap:wrap;margin:14px 0}.mode-actions{justify-content:center;margin-top:16px}.centered{justify-content:center}
+.primary,.secondary,.text-button{border-radius:14px;cursor:pointer;font-weight:700;padding:12px 18px;font-size:18px}
+.primary{background:var(--accent);color:#fff;border:1px solid var(--accent)}.secondary{background:var(--accent-soft);color:#075db6;border:1px solid #c7ddfb}.text-button{border:0;background:transparent;color:var(--accent)}
+.primary:hover,.secondary:hover{filter:brightness(1.04)}button:disabled{opacity:.55;cursor:not-allowed}.large{padding:14px 22px;font-size:20px}
+.menu-heading{display:flex;justify-content:space-between;gap:16px;align-items:flex-start}.mode-label{color:var(--accent);font-weight:700}
+.lbl{font-size:18px}.badge{background:#eef4ff;border:1px solid #cfe1ff;color:#fff;padding:6px 12px;border-radius:999px;display:inline-block;min-width:38px;text-align:center;font-weight:700}.badge.large{font-size:22px;padding:8px 14px}
+.formula,.privacy-note{background:#f6f9ff;border:1px dashed #bdd8fa;border-radius:14px;padding:14px;font-size:16px;line-height:1.7}
+input[type="range"]{-webkit-appearance:none;width:min(420px,70vw);height:10px;border-radius:999px;background:#e6e9f2;outline:none}
+input[type="range"]::-webkit-slider-runnable-track{height:10px;background:transparent}
+input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;border-radius:50%;border:2px solid #fff;background:var(--thumb-color,#0a84ff);box-shadow:0 0 0 1px rgba(0,0,0,.08);margin-top:-6px}
+.hud{display:grid;grid-template-columns:2fr repeat(3,1fr);gap:12px;margin-bottom:12px;font-size:18px}.hud .score{text-align:right}
+#timer-wrap{position:relative;background:#f1f4fb;border:1px solid var(--border);height:22px;border-radius:14px;margin:34px 0 10px}
+#timer-bar{position:absolute;inset:0 auto 0 0;width:100%;border-radius:14px;transition:width .2s linear,background .2s linear}
+#timer-text{position:absolute;right:8px;top:-29px;color:var(--muted);font-size:14px}
+.target{display:inline-flex;align-items:center;gap:14px;font-size:21px;font-weight:800;margin:16px 0;padding:12px 16px;border:2px solid #cbd5e1;border-radius:16px;background:#fff;box-shadow:0 6px 18px rgba(15,23,42,.08)}
+.target .badge.large{min-width:56px;padding:8px 16px;border:0;border-radius:12px;font-size:30px;line-height:1.1;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.2)}
+.target-false{border-color:#f4aaa5;background:#fff5f4}.target-false .badge{background:#d92d20!important;box-shadow:0 0 0 4px rgba(217,45,32,.14)}
+.target-true{border-color:#90d5aa;background:#f2fbf5}.target-true .badge{background:#198754!important;box-shadow:0 0 0 4px rgba(25,135,84,.14)}
+.expression{display:flex;gap:10px;align-items:center;background:#f9fbff;border:1px dashed #d6def5;border-radius:14px;padding:14px;min-height:68px;font-size:22px}.expression.singleline{flex-wrap:nowrap;overflow-x:auto;white-space:nowrap}
+.token{display:inline-flex;align-items:center}.tf{padding:8px;border-radius:10px;border:1px solid #d6def5;background:#fff;font-size:18px}.tf.placeholder{color:#999}.operator{font-size:28px;color:#304b9a}.paren{font-size:30px}.paren-depth-0{color:#1e90ff}.paren-depth-1{color:#32a852}.paren-depth-2{color:#f08a00}.paren-depth-3{color:#7c3cc4}.paren-depth-4{color:#d62e4c}.paren-depth-5{color:#159c91}
+.feedback,.save-status{min-height:28px;margin-top:10px;font-size:18px}.correct{color:var(--success);font-weight:700}.incorrect,.save-status{color:var(--danger);font-weight:700}.muted{color:var(--muted)}
+.modal{position:fixed;inset:0;z-index:10;background:rgba(7,17,38,.55);display:grid;place-items:center;padding:20px}.modal-panel{position:relative;width:min(900px,100%);max-height:90vh;overflow:auto;background:#fff;border-radius:22px;padding:28px;box-shadow:0 30px 80px rgba(0,0,0,.25)}.modal-close{position:absolute;right:16px;top:12px;border:0;background:transparent;font-size:34px;color:var(--muted);cursor:pointer}.test-options{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:18px}.test-option{border:1px solid var(--border);border-radius:18px;padding:20px}.test-option.special{border-color:#b8d5fa;background:#f8fbff}.test-option h3{font-size:22px;margin-top:0}.privacy-note{color:#314158}
+@media(max-width:900px){.player-form{grid-template-columns:1fr 1fr}.hud{grid-template-columns:1fr 1fr}.hud .score{text-align:left}}
+@media(max-width:620px){.container{padding:16px}.card{padding:18px}.player-form,.test-options{grid-template-columns:1fr}.mode-actions{display:grid}.mode-actions button{width:100%}.hud{font-size:15px}.expression{gap:7px;padding:10px}.operator{font-size:24px}.paren{font-size:25px}}

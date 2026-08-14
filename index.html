@@ -2,9 +2,9 @@
 <html lang="th">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>เกมตรรกศาสตร์ : การสร้างประพจน์</title>
-  <link rel="stylesheet" href="style.css"/>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <div class="container">
@@ -13,98 +13,111 @@
       <p class="subtitle">โดย คุณครูปฏิญญา มุ่งหมาย กลุ่มสาระการเรียนรู้คณิตศาสตร์ โรงเรียนขอนแก่นวิทยายน</p>
     </header>
 
-    <!-- Start Screen -->
-    <section id="start-screen" class="card">
-      <h2>ชื่อผู้เล่น</h2>
-      <label class="lbl" for="player-id">ชื่อ - ห้อง/เลขที่ (เช่น ปฏิญ 4/3 - 15)</label>
-      <input id="player-id" type="text" placeholder="พิมพ์ที่นี่..."
-             autocomplete="off" autocapitalize="off" spellcheck="false" inputmode="text" />
-      <button id="start-btn" class="primary large">เลือกระดับความท้าทาย</button>
+    <section id="start-screen" class="card start-card">
+      <h2>ข้อมูลผู้เล่น</h2>
+      <div class="player-form">
+        <label>คำนำหน้า
+          <select id="prefix">
+            <option value="">เลือกคำนำหน้า</option>
+            <option value="นาย">นาย</option>
+            <option value="นางสาว">นางสาว</option>
+          </select>
+        </label>
+        <label>ชื่อจริง
+          <input id="first-name" type="text" autocomplete="given-name" placeholder="ชื่อจริง" />
+        </label>
+        <label>นามสกุล
+          <input id="last-name" type="text" autocomplete="family-name" placeholder="นามสกุล" />
+        </label>
+        <label>ระดับชั้น
+          <select id="classroom">
+            <option value="">เลือกระดับชั้น</option>
+          </select>
+        </label>
+        <label>เลขที่
+          <input id="student-number" type="number" min="1" max="60" inputmode="numeric" placeholder="เลขที่" />
+        </label>
+      </div>
+      <div id="form-error" class="form-error" role="alert"></div>
+      <div class="mode-actions">
+        <button id="practice-btn" class="primary large">ทำแบบฝึกหัด</button>
+        <button id="test-btn" class="secondary large">ทำแบบทดสอบ</button>
+      </div>
     </section>
 
-    <!-- Main Menu -->
     <section id="menu-screen" class="card hidden">
-      <h2>เลือกระดับความท้าทาย</h2>
+      <div class="menu-heading">
+        <div>
+          <h2 id="menu-title">เลือกระดับความยาก</h2>
+          <div id="mode-label" class="mode-label">แบบฝึกหัด</div>
+        </div>
+        <button id="change-mode-btn" class="text-button">เปลี่ยนโหมด</button>
+      </div>
       <div class="row">
-        <label for="difficulty" class="lbl">(1–10):</label>
-        <input id="difficulty" type="range" min="1" max="10" value="3"
-               oninput="document.getElementById('diff-val').textContent=this.value" />
+        <label for="difficulty" class="lbl">ระดับ (1–10):</label>
+        <input id="difficulty" type="range" min="1" max="10" value="3" />
         <span id="diff-val" class="badge">3</span>
       </div>
-      <div class="formula">
-        คะแนนจะขึ้นอยู่กับระดับความยากที่เลือกและระยะเวลาที่ใช้ในแต่ละข้อ<br/>
-        <strong>ตอบถูก</strong> : (100 + 10×เวลาที่เหลือ)×ระดับความยาก<br/>
-        <strong>ตอบผิด</strong> : −100 × ระดับความยาก<br/>
-        <strong>กดข้าม/หมดเวลา</strong> : ไม่เสียคะแนน
-      </div>
-      <div class="row">
-        <button id="play-btn" class="primary large">เริ่มเกม (10 ข้อ)</button>
-        <button id="leaderboard-btn" class="ghost large">ดูสถิติที่ผ่านมา</button>
-      </div>
-      <div id="last-player" class="muted"></div>
-
-      <!-- Top 10 (รวมทั้งหมด) บนหน้าเมนู -->
-      <div id="menu-top10" class="card" style="margin-top:8px;">
-        <h3>🏆 Top 10 (ทั้งหมด)</h3>
-        <div id="top10-menu-table" class="top10-table muted">กำลังโหลด...</div>
-      </div>
+      <div id="level-details" class="formula"></div>
+      <button id="play-btn" class="primary large">เริ่ม (10 ข้อ)</button>
     </section>
 
-    <!-- Game Screen -->
     <section id="game-screen" class="card hidden">
       <div class="hud">
         <div>ผู้เล่น: <span id="hud-player">-</span></div>
-        <div>ความยาก: <span id="hud-diff">-</span></div>
+        <div>ระดับ: <span id="hud-diff">-</span></div>
         <div>ข้อที่: <span id="hud-q">1/10</span></div>
-        <div class="score">คะแนน: <span id="hud-score">0</span></div>
+        <div class="score"><span id="hud-score-label">คะแนน</span>: <span id="hud-score">0</span></div>
       </div>
-
       <div id="timer-wrap">
         <div id="timer-bar"></div>
         <span id="timer-text">--</span>
       </div>
-
       <div id="target" class="target">
-        คำตอบที่ต้องการ: <span id="target-val" class="badge large">T</span>
+        คำตอบที่ต้องการ: <span id="target-val" class="badge large">F</span>
       </div>
-
       <div id="expression" class="expression singleline" title="เลือกค่า T/F ให้ครบทุกตำแหน่ง"></div>
-
       <div class="row centered">
         <button id="check-btn" class="primary large">ตรวจคำตอบ</button>
-        <button id="skip-btn" class="ghost large">ข้าม</button>
       </div>
-
-      <div id="feedback" class="feedback"></div>
+      <div id="feedback" class="feedback" aria-live="polite"></div>
     </section>
 
-    <!-- Summary Screen -->
     <section id="summary-screen" class="card hidden">
       <h2>สรุปผล</h2>
       <div id="summary"></div>
+      <div id="save-status" class="save-status" aria-live="polite"></div>
       <div class="row">
-        <button id="back-menu-btn" class="primary large">กลับหน้าหลัก</button>
-        <button id="play-again-btn" class="ghost large">เล่นอีกครั้ง</button>
-      </div>
-
-      <!-- Top 10 (รวมทั้งหมด) บนหน้าสรุป -->
-      <div id="summary-top10" class="card" style="margin-top:8px;">
-        <h3>🏆 Top 10 (ทั้งหมด)</h3>
-        <div id="top10-summary-table" class="top10-table muted">กำลังโหลด...</div>
-      </div>
-    </section>
-
-    <!-- Leaderboard Screen (local) -->
-    <section id="leaderboard-screen" class="card hidden">
-      <h2>สถิติการเล่น (เฉพาะอุปกรณ์นี้)</h2>
-      <div id="leaderboard"></div>
-      <div class="row">
-        <button id="leaderboard-back" class="primary large">กลับหน้าหลัก</button>
+        <button id="back-menu-btn" class="primary large">กลับหน้าเลือกระดับ</button>
+        <button id="play-again-btn" class="secondary large">ทำอีกครั้ง</button>
       </div>
     </section>
   </div>
 
-  <!-- script ไว้ท้าย body ก็โอเค (โหลดหลัง DOM พร้อม) -->
+  <div id="test-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="test-modal-title">
+    <div class="modal-panel">
+      <button id="close-modal-btn" class="modal-close" aria-label="ปิด">×</button>
+      <h2 id="test-modal-title">เลือกประเภทแบบทดสอบ</h2>
+      <p class="privacy-note">เมื่อทำครบ 10 ข้อ ชื่อและผลแบบทดสอบจะถูกบันทึกลงใน Google Sheet ของครูผู้สอน ข้อมูลของผู้เล่นจะไม่แสดงบนเว็บไซต์นี้</p>
+      <div class="test-options">
+        <article class="test-option">
+          <h3>นักเรียนทั่วไป</h3>
+          <p>คะแนนเต็ม = ระดับความยาก + 3</p>
+          <p>ตอบผิดหรือหมดเวลา หักข้อละ 1 คะแนน</p>
+          <p>คะแนนต่ำสุด 0 คะแนน</p>
+          <button class="primary choose-test" data-student-type="general">เลือกแบบทดสอบนี้</button>
+        </article>
+        <article class="test-option special">
+          <h3>นักเรียนห้องเรียนพิเศษ</h3>
+          <p>คะแนนเต็ม = ระดับความยาก + 2</p>
+          <p>ตอบผิดหรือหมดเวลา หักข้อละ 1 คะแนน</p>
+          <p>คะแนนต่ำสุด 0 คะแนน</p>
+          <button class="primary choose-test" data-student-type="special">เลือกแบบทดสอบนี้</button>
+        </article>
+      </div>
+    </div>
+  </div>
+
   <script src="game.js" defer></script>
 </body>
 </html>
