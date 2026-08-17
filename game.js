@@ -206,7 +206,10 @@
       const select = document.createElement("select");
       select.className = "tf placeholder";
       select.innerHTML = '<option value="" disabled selected>—</option><option value="T">T</option><option value="F">F</option>';
-      select.addEventListener("change", () => select.classList.remove("placeholder"));
+      select.addEventListener("change", () => {
+        select.classList.remove("placeholder");
+        select.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
+      });
       token.appendChild(select);
       expression.appendChild(token);
       state.current.selects.push(select);
