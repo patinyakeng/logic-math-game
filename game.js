@@ -6,8 +6,8 @@
   const OPS = ["∧", "∨", "→", "↔"];
   const API_URL = "https://script.google.com/macros/s/AKfycbwR8of3Llm4JRescPwNp9x2Xv4KfPCAQvng7iqJngFm_DYXE-w_QKlMxcW5su6bE0PeUg/exec";
   const DEPTH_RANGES = {
-    1: [1, 1], 2: [2, 2], 3: [2, 3], 4: [3, 3], 5: [3, 4],
-    6: [4, 4], 7: [4, 5], 8: [5, 5], 9: [5, 6], 10: [6, 6],
+    1: [1, 1], 2: [2, 2], 3: [2, 3], 4: [3, 3], 5: [3, 3],
+    6: [3, 3], 7: [3, 3], 8: [4, 4], 9: [4, 4], 10: [4, 4],
   };
 
   const screens = {
@@ -126,9 +126,9 @@
   function updateLevelDetails() {
     const level = Number(difficulty.value);
     const [minDepth, maxDepth] = DEPTH_RANGES[level];
-    const depthText = minDepth === maxDepth ? `${minDepth}` : `${minDepth}–${maxDepth}`;
+    const visibleParenDepth = Math.max(0, maxDepth - 1);
     if (state.mode === "practice") {
-      $("#level-details").innerHTML = `โจทย์แต่ละข้อมี <strong>${level} ตัวเชื่อม</strong> และ <strong>${level + 1} ช่อง T/F</strong> ความลึก ${depthText} ชั้น`;
+      $("#level-details").innerHTML = `โจทย์แต่ละข้อมี <strong>${level} ตัวเชื่อม</strong> และ <strong>${level + 1} ช่อง T/F</strong> วงเล็บซ้อนไม่เกิน <strong>${visibleParenDepth} ชั้น</strong>`;
     } else {
       const bonus = state.studentType === "general" ? 3 : 1;
       $("#level-details").innerHTML = `โจทย์แต่ละข้อมี <strong>${level} ตัวเชื่อม</strong> และ <strong>${level + 1} ช่อง T/F</strong><br>คะแนนเต็ม <strong>${level + bonus}</strong> คะแนน ผิดหรือหมดเวลาหักข้อละ 1 คะแนน`;
@@ -199,7 +199,7 @@
     throw new Error(`สร้างโจทย์ระดับ ${level} ไม่สำเร็จ`);
   }
 
-  function renderTree(node, depth = 0) {
+  function renderTree(node, depth = 0, isRoot = true) {
     if (node.type === "leaf") {
       const token = document.createElement("div");
       token.className = "token";
@@ -223,11 +223,11 @@
     operator.textContent = node.op;
     const rightParen = leftParen.cloneNode();
     rightParen.textContent = ")";
-    expression.appendChild(leftParen);
-    renderTree(node.left, depth + 1);
+    if (!isRoot) expression.appendChild(leftParen);
+    renderTree(node.left, depth + 1, false);
     expression.appendChild(operator);
-    renderTree(node.right, depth + 1);
-    expression.appendChild(rightParen);
+    renderTree(node.right, depth + 1, false);
+    if (!isRoot) expression.appendChild(rightParen);
   }
 
   function lockInputs(disabled) {
