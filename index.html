@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>เกมตรรกศาสตร์ : การสร้างประพจน์</title>
-  <link rel="stylesheet" href="style.css?v=20260817-2" />
+  <link rel="stylesheet" href="style.css?v=20260817-3" />
 </head>
 <body>
   <div class="container">
@@ -67,7 +67,7 @@
         <div>ผู้เล่น: <span id="hud-player">-</span></div>
         <div>ระดับ: <span id="hud-diff">-</span></div>
         <div>ข้อที่: <span id="hud-q">1/10</span></div>
-        <div class="score"><span id="hud-score-label">คะแนน</span>: <span id="hud-score">0</span></div>
+        <div class="score">ตอบถูก: <span id="hud-correct">0</span></div>
       </div>
       <div id="timer-wrap">
         <div id="timer-bar"></div>
@@ -102,22 +102,20 @@
       <div class="test-options">
         <article class="test-option">
           <h3>นักเรียนทั่วไป</h3>
-          <p>คะแนนเต็ม = ระดับความยาก + 3</p>
-          <p>ตอบผิดหรือหมดเวลา หักข้อละ 1 คะแนน</p>
-          <p>คะแนนต่ำสุด 0 คะแนน</p>
+          <p>สรุปผลเป็นจำนวนข้อที่ตอบถูกจาก 10 ข้อ</p>
+          <p>แสดงเวลาเฉลี่ยที่ใช้ต่อข้อ</p>
           <button class="primary choose-test" data-student-type="general">เลือกแบบทดสอบนี้</button>
         </article>
         <article class="test-option special">
           <h3>นักเรียนห้องเรียนพิเศษ</h3>
-          <p>คะแนนเต็ม = ระดับความยาก + 1</p>
-          <p>ตอบผิดหรือหมดเวลา หักข้อละ 1 คะแนน</p>
-          <p>คะแนนต่ำสุด 0 คะแนน</p>
+          <p>สรุปผลเป็นจำนวนข้อที่ตอบถูกจาก 10 ข้อ</p>
+          <p>แสดงเวลาเฉลี่ยที่ใช้ต่อข้อ</p>
           <button class="primary choose-test" data-student-type="special">เลือกแบบทดสอบนี้</button>
         </article>
       </div>
     </div>
   </div>
 
-  <script src="game.js?v=20260817-2" defer></script>
+  <script src="game.js?v=20260817-3" defer></script>
 </body>
 </html>
