@@ -32,9 +32,9 @@
     difficulty: 3,
     qIndex: 0,
     totalQ: 10,
-    score: 0,
     correct: 0,
     times: [],
+    timeCarry: 0,
     rootOperators: [],
     current: { tree: null, selects: [], target: false },
     timer: { max: 30, left: 30, id: null },
@@ -127,12 +127,7 @@
     const level = Number(difficulty.value);
     const [minDepth, maxDepth] = DEPTH_RANGES[level];
     const visibleParenDepth = Math.max(0, maxDepth - 1);
-    if (state.mode === "practice") {
-      $("#level-details").innerHTML = `โจทย์แต่ละข้อมี <strong>${level} ตัวเชื่อม</strong> และ <strong>${level + 1} ช่อง T/F</strong> วงเล็บซ้อนไม่เกิน <strong>${visibleParenDepth} ชั้น</strong>`;
-    } else {
-      const bonus = state.studentType === "general" ? 3 : 1;
-      $("#level-details").innerHTML = `โจทย์แต่ละข้อมี <strong>${level} ตัวเชื่อม</strong> และ <strong>${level + 1} ช่อง T/F</strong><br>คะแนนเต็ม <strong>${level + bonus}</strong> คะแนน ผิดหรือหมดเวลาหักข้อละ 1 คะแนน`;
-    }
+    $("#level-details").innerHTML = `โจทย์แต่ละข้อมี <strong>${level} ตัวเชื่อม</strong> และ <strong>${level + 1} ช่อง T/F</strong> วงเล็บซ้อนไม่เกิน <strong>${visibleParenDepth} ชั้น</strong><br>เวลาที่เหลือจากข้อก่อนหน้าจะสะสมไปยังข้อถัดไป`;
   }
 
   function randomTree(nLeaves) {
@@ -270,19 +265,16 @@
     feedback.textContent = "";
     renderTree(question.tree);
     lockInputs(false);
-    setTimer(secondsForDifficulty(state.difficulty));
+    setTimer(secondsForDifficulty(state.difficulty) + state.timeCarry);
   }
 
   function nextQuestion() {
     if (state.finished) return;
     state.times.push(state.timer.max - state.timer.left);
+    state.timeCarry = state.timer.left;
     state.qIndex += 1;
     if (state.qIndex >= state.totalQ) endGame();
     else newQuestion();
-  }
-
-  function updatePracticeScore() {
-    $("#hud-score").textContent = state.mode === "practice" ? state.score : state.correct;
   }
 
   function checkAnswer() {
@@ -298,28 +290,12 @@
     const correct = evalTree(state.current.tree, values) === state.current.target;
     if (correct) {
       state.correct += 1;
-      if (state.mode === "practice") {
-        const gained = Math.floor((100 + 10 * Math.max(0, state.timer.left)) * state.difficulty);
-        state.score += gained;
-        feedback.innerHTML = `<span class="correct">ถูกต้อง! +${gained} คะแนน</span>`;
-      } else {
-        feedback.innerHTML = '<span class="correct">ถูกต้อง</span>';
-      }
-    } else if (state.mode === "practice") {
-      const penalty = 100 * state.difficulty;
-      state.score -= penalty;
-      feedback.innerHTML = `<span class="incorrect">ตอบผิด −${penalty} คะแนน</span>`;
+      feedback.innerHTML = '<span class="correct">ถูกต้อง</span>';
     } else {
       feedback.innerHTML = '<span class="incorrect">ตอบผิด</span>';
     }
-    updatePracticeScore();
+    $("#hud-correct").textContent = state.correct;
     setTimeout(nextQuestion, 700);
-  }
-
-  function testScore() {
-    const bonus = state.studentType === "general" ? 3 : 1;
-    const wrong = state.totalQ - state.correct;
-    return Math.max(0, state.difficulty + bonus - wrong);
   }
 
   function escapeHtml(value) {
@@ -346,13 +322,11 @@
     clearInterval(state.timer.id);
     const average = state.times.length ? state.times.reduce((sum, time) => sum + time, 0) / state.times.length : 0;
     const wrong = state.totalQ - state.correct;
-    const score = state.mode === "test" ? testScore() : state.score;
     $("#summary").innerHTML = `
       <p><strong>ผู้เล่น:</strong> ${escapeHtml(playerDisplayName())}</p>
       <p><strong>โหมด:</strong> ${state.mode === "practice" ? "แบบฝึกหัด" : escapeHtml(state.studentType === "general" ? "แบบทดสอบนักเรียนทั่วไป" : "แบบทดสอบนักเรียนห้องเรียนพิเศษ")}</p>
       <p><strong>ระดับ:</strong> ${state.difficulty}</p>
       <p><strong>ตอบถูก:</strong> ${state.correct}/${state.totalQ}</p>
-      <p><strong>คะแนน:</strong> ${score}</p>
       <p><strong>เวลาเฉลี่ย/ข้อ:</strong> ${average.toFixed(1)} วินาที</p>`;
     $("#save-status").textContent = "";
     showOnly("summary");
@@ -372,7 +346,6 @@
         correct: state.correct,
         wrong,
         total: state.totalQ,
-        score,
         averageTime: average.toFixed(2),
       });
       $("#save-status").textContent = result.ok
@@ -386,16 +359,15 @@
   function startGame() {
     state.difficulty = Number(difficulty.value);
     state.qIndex = 0;
-    state.score = 0;
     state.correct = 0;
     state.times = [];
+    state.timeCarry = 0;
     state.finished = false;
     state.hasSaved = false;
     state.rootOperators = makeRootSchedule();
     $("#hud-player").textContent = playerDisplayName();
     $("#hud-diff").textContent = state.difficulty;
-    $("#hud-score-label").textContent = state.mode === "practice" ? "คะแนน" : "ตอบถูก";
-    $("#hud-score").textContent = "0";
+    $("#hud-correct").textContent = "0";
     showOnly("game");
     newQuestion();
   }
