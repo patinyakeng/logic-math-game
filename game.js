@@ -298,6 +298,12 @@
     setTimeout(nextQuestion, 700);
   }
 
+  function testScore() {
+    const bonus = state.studentType === "general" ? 3 : 1;
+    const wrong = state.totalQ - state.correct;
+    return Math.max(0, state.difficulty + bonus - wrong);
+  }
+
   function escapeHtml(value) {
     return String(value).replace(/[&<>"']/g, (char) => ({
       "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;",
@@ -322,11 +328,13 @@
     clearInterval(state.timer.id);
     const average = state.times.length ? state.times.reduce((sum, time) => sum + time, 0) / state.times.length : 0;
     const wrong = state.totalQ - state.correct;
+    const score = state.mode === "test" ? testScore() : null;
     $("#summary").innerHTML = `
       <p><strong>ผู้เล่น:</strong> ${escapeHtml(playerDisplayName())}</p>
       <p><strong>โหมด:</strong> ${state.mode === "practice" ? "แบบฝึกหัด" : escapeHtml(state.studentType === "general" ? "แบบทดสอบนักเรียนทั่วไป" : "แบบทดสอบนักเรียนห้องเรียนพิเศษ")}</p>
       <p><strong>ระดับ:</strong> ${state.difficulty}</p>
       <p><strong>ตอบถูก:</strong> ${state.correct}/${state.totalQ}</p>
+      ${state.mode === "test" ? `<p><strong>คะแนนแบบทดสอบ:</strong> ${score} คะแนน</p>` : ""}
       <p><strong>เวลาเฉลี่ย/ข้อ:</strong> ${average.toFixed(1)} วินาที</p>`;
     $("#save-status").textContent = "";
     showOnly("summary");
@@ -346,6 +354,7 @@
         correct: state.correct,
         wrong,
         total: state.totalQ,
+        score,
         averageTime: average.toFixed(2),
       });
       $("#save-status").textContent = result.ok
